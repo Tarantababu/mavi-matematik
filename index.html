@@ -1,884 +1,813 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mavi'nin Mathe Star - Halloween Edition 🎃</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <style>
-    :root {
-      --bg-gradient: linear-gradient(135deg, #1e102d 0%, #2a1b40 50%, #12091f 100%);
-      --card-bg: rgba(43, 27, 61, 0.92);
-      --orange-main: #ff7a00;
-      --orange-glow: #ff9d00;
-      --purple-accent: #9d4edd;
-      --green-glow: #00f0ff;
-      --green-accent: #39ff14;
-      --zehner-blue: #00d2ff;
-      --einer-yellow: #ffea00;
-      --text-light: #f8f9fa;
-      --dark-card: #180d26;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mavi's Mathe Star - Halloween Edition 🎃</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            background: linear-gradient(135deg, #1e102d 0%, #2a1b40 50%, #12091f 100%);
+            min-height: 100vh;
+            user-select: none;
+            overflow-x: hidden;
+            color: #f8f9fa;
+        }
 
-    * {
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-user-select: none;
-      font-family: 'Nunito', sans-serif;
-    }
+        .spooky-bg-decor {
+            position: fixed;
+            font-size: 2rem;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatGhost 8s ease-in-out infinite alternate;
+        }
 
-    body {
-      margin: 0;
-      padding: 12px;
-      background: var(--bg-gradient);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: var(--text-light);
-      overflow-x: hidden;
-    }
+        @keyframes floatGhost {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-25px) rotate(10deg); }
+        }
 
-    .spooky-bg-decor {
-      position: fixed;
-      font-size: 2rem;
-      opacity: 0.15;
-      pointer-events: none;
-      z-index: 0;
-      animation: floatGhost 8s ease-in-out infinite alternate;
-    }
+        .card-bounce {
+            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
 
-    @keyframes floatGhost {
-      0% { transform: translateY(0px) rotate(0deg); }
-      100% { transform: translateY(-25px) rotate(10deg); }
-    }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
-    .app-container {
-      width: 100%;
-      max-width: 650px;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
+        .pulse-btn:active {
+            transform: scale(0.92);
+        }
 
-    header {
-      background: var(--card-bg);
-      border: 2px solid rgba(255, 122, 0, 0.4);
-      box-shadow: 0 0 15px rgba(255, 122, 0, 0.2);
-      border-radius: 20px;
-      padding: 12px 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      backdrop-filter: blur(8px);
-    }
+        /* Glassmorphism Halloween Theme */
+        .glass-panel {
+            background: rgba(43, 27, 61, 0.92);
+            backdrop-filter: blur(14px);
+            border: 2px solid rgba(255, 122, 0, 0.4);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
 
-    .title-area h1 {
-      font-family: 'Fredoka One', cursive;
-      margin: 0;
-      font-size: 1.5rem;
-      color: var(--orange-main);
-      text-shadow: 0 0 8px rgba(255, 122, 0, 0.6);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        /* Tens and Ones Visual Blocks */
+        .tens-block {
+            background-color: #00d2ff; /* Blue for Zehner */
+            color: #000;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+            font-weight: 900;
+        }
 
-    .subtitle {
-      font-size: 0.85rem;
-      color: #d1c4e9;
-      margin: 2px 0 0 0;
-      font-weight: 700;
-    }
+        .ones-block {
+            background-color: #ffea00; /* Yellow for Einer */
+            color: #000;
+            box-shadow: 0 0 10px rgba(255, 234, 0, 0.5);
+            font-weight: 900;
+        }
 
-    .icon-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-      font-size: 1.2rem;
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
+        /* Progress track runner */
+        .runner-avatar {
+            transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
-    .icon-btn:active {
-      transform: scale(0.92);
-    }
-
-    .progress-card {
-      background: var(--card-bg);
-      border: 2px solid rgba(157, 78, 221, 0.4);
-      border-radius: 20px;
-      padding: 14px;
-      position: relative;
-    }
-
-    .reward-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.95rem;
-      font-weight: 800;
-      margin-bottom: 8px;
-      color: #e0aaff;
-    }
-
-    .progress-track-bg {
-      background: rgba(0, 0, 0, 0.4);
-      height: 22px;
-      border-radius: 12px;
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .progress-bar-fill {
-      background: linear-gradient(90deg, #ff7a00, #39ff14);
-      height: 100%;
-      width: 0%;
-      border-radius: 12px;
-      transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
-    }
-
-    .progress-ghost-icon {
-      position: absolute;
-      top: -3px;
-      transform: translateX(-50%);
-      font-size: 1.4rem;
-      transition: left 0.4s ease;
-      filter: drop-shadow(0 0 5px rgba(255,255,255,0.8));
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 2px solid rgba(255, 122, 0, 0.3);
-      border-radius: 24px;
-      padding: 24px 18px;
-      text-align: center;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-      position: relative;
-    }
-
-    .question-display {
-      font-family: 'Fredoka One', cursive;
-      font-size: 3.2rem;
-      color: #fff;
-      letter-spacing: 2px;
-      margin: 15px 0;
-      text-shadow: 0 0 12px rgba(255, 122, 0, 0.4);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .input-wrapper {
-      margin: 20px 0;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
-
-    .answer-input {
-      width: 140px;
-      height: 65px;
-      font-family: 'Fredoka One', cursive;
-      font-size: 2.5rem;
-      text-align: center;
-      border-radius: 18px;
-      border: 3px solid var(--orange-main);
-      background: #12091f;
-      color: #fff;
-      outline: none;
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
-    .answer-input:focus {
-      border-color: var(--green-accent);
-      box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
-    }
-
-    .btn-submit {
-      background: linear-gradient(180deg, #ff9d00 0%, #ff5500 100%);
-      border: none;
-      color: #fff;
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.4rem;
-      padding: 0 28px;
-      border-radius: 18px;
-      cursor: pointer;
-      box-shadow: 0 6px 0 #b33600, 0 8px 15px rgba(0, 0, 0, 0.4);
-      transition: all 0.15s ease;
-    }
-
-    .btn-submit:active {
-      transform: translateY(4px);
-      box-shadow: 0 2px 0 #b33600, 0 3px 8px rgba(0, 0, 0, 0.4);
-    }
-
-    .feedback-msg {
-      min-height: 28px;
-      font-weight: 800;
-      font-size: 1.1rem;
-      margin-top: 8px;
-    }
-
-    .feedback-msg.correct { color: var(--green-accent); text-shadow: 0 0 8px rgba(57,255,20,0.5); }
-    .feedback-msg.wrong { color: #ff4d6d; }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(10, 5, 18, 0.88);
-      backdrop-filter: blur(10px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 16px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .modal-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .explanation-card {
-      background: #1d102e;
-      border: 2px solid var(--purple-accent);
-      border-radius: 24px;
-      padding: 20px;
-      width: 100%;
-      max-width: 540px;
-      box-shadow: 0 0 30px rgba(157, 78, 221, 0.4);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .expl-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 10px;
-    }
-
-    .expl-header h2 {
-      font-family: 'Fredoka One', cursive;
-      margin: 0;
-      color: var(--orange-glow);
-      font-size: 1.3rem;
-    }
-
-    .step-visual-box {
-      background: #120820;
-      border-radius: 16px;
-      padding: 18px;
-      min-height: 180px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      border: 1px dashed rgba(255, 255, 255, 0.15);
-    }
-
-    .blocks-container {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .zehner-block {
-      background: var(--zehner-blue);
-      color: #000;
-      font-weight: 900;
-      padding: 8px 14px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
-      font-size: 1.15rem;
-    }
-
-    .einer-block {
-      background: var(--einer-yellow);
-      color: #000;
-      font-weight: 900;
-      padding: 8px 12px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(255, 234, 0, 0.5);
-      font-size: 1.15rem;
-    }
-
-    .expl-text {
-      font-size: 1.2rem;
-      font-weight: 800;
-      text-align: center;
-      color: #f1f1f1;
-      line-height: 1.5;
-      padding: 0 10px;
-    }
-
-    .audio-indicator {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--green-accent);
-      font-size: 0.85rem;
-      font-weight: 800;
-    }
-
-    .audio-wave {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background: var(--green-accent);
-      border-radius: 50%;
-      animation: pulseWave 1s infinite;
-    }
-
-    @keyframes pulseWave {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.6); opacity: 0.4; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .nav-buttons {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-      font-weight: 800;
-      padding: 10px 16px;
-      border-radius: 12px;
-      cursor: pointer;
-    }
-
-    .btn-next-step {
-      background: var(--purple-accent);
-      border: none;
-      color: #fff;
-      font-family: 'Fredoka One', cursive;
-      padding: 10px 20px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 1rem;
-      box-shadow: 0 4px 10px rgba(157, 78, 221, 0.4);
-    }
-
-    .settings-modal {
-      background: #1d102e;
-      border: 2px solid var(--orange-main);
-      border-radius: 24px;
-      padding: 20px;
-      width: 100%;
-      max-width: 450px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      text-align: left;
-    }
-
-    .form-group label {
-      font-size: 0.85rem;
-      font-weight: 800;
-      color: #d1c4e9;
-    }
-
-    .form-control {
-      background: #120820;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
-      padding: 10px;
-      color: #fff;
-      font-size: 1rem;
-      outline: none;
-    }
-
-    .reward-select-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-
-    .reward-opt {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      padding: 10px;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 700;
-      font-size: 0.9rem;
-    }
-
-    .reward-opt.selected {
-      border-color: var(--orange-main);
-      background: rgba(255, 122, 0, 0.2);
-    }
-
-    .celebration-card {
-      background: #1d102e;
-      border: 3px solid var(--green-accent);
-      border-radius: 28px;
-      padding: 30px 20px;
-      text-align: center;
-      max-width: 450px;
-      width: 100%;
-      box-shadow: 0 0 40px rgba(57, 255, 20, 0.4);
-    }
-
-    .celebration-card h2 {
-      font-family: 'Fredoka One', cursive;
-      color: var(--green-accent);
-      font-size: 2rem;
-      margin: 10px 0;
-    }
-
-    .reward-badge-big {
-      font-size: 4.5rem;
-      margin: 15px 0;
-      animation: bounce 1.2s infinite alternate;
-    }
-
-    @keyframes bounce {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-15px); }
-    }
-  </style>
+        /* Wave indicator for active audio */
+        .audio-wave {
+            display: inline-block;
+            position: relative;
+            width: 16px;
+            height: 16px;
+        }
+        .audio-wave div {
+            display: inline-block;
+            position: absolute;
+            left: 0;
+            width: 3px;
+            background: #39ff14;
+            animation: audio-wave 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+        }
+        .audio-wave div:nth-child(1) { left: 0px; animation-delay: -0.24s; }
+        .audio-wave div:nth-child(2) { left: 5px; animation-delay: -0.12s; }
+        .audio-wave div:nth-child(3) { left: 10px; animation-delay: 0s; }
+        @keyframes audio-wave {
+            0% { top: 2px; height: 12px; }
+            50%, 100% { top: 6px; height: 4px; }
+        }
+    </style>
 </head>
-<body>
+<body class="flex flex-col min-h-screen items-center justify-between p-3 md:p-6 relative">
 
-  <!-- Spooky Background Elements -->
-  <div class="spooky-bg-decor" style="top: 10%; left: 5%;">👻</div>
-  <div class="spooky-bg-decor" style="top: 20%; right: 8%; animation-delay: 1s;">🎃</div>
-  <div class="spooky-bg-decor" style="bottom: 15%; left: 8%; animation-delay: 2s;">🦇</div>
-  <div class="spooky-bg-decor" style="bottom: 10%; right: 5%; animation-delay: 1.5s;">🕷️</div>
+    <!-- Spooky Background Elements -->
+    <div class="spooky-bg-decor" style="top: 10%; left: 5%;">👻</div>
+    <div class="spooky-bg-decor" style="top: 20%; right: 8%; animation-delay: 1s;">🎃</div>
+    <div class="spooky-bg-decor" style="bottom: 15%; left: 8%; animation-delay: 2s;">🦇</div>
+    <div class="spooky-bg-decor" style="bottom: 10%; right: 5%; animation-delay: 1.5s;">🕷️</div>
 
-  <div class="app-container">
-    <!-- Header -->
-    <header>
-      <div class="title-area">
-        <h1>🎃 Mathe Star</h1>
-        <div class="subtitle">Mavi's Halloween Edition 👻</div>
-      </div>
-      <button class="icon-btn" onclick="openSettings()">⚙️</button>
+    <!-- Header Section -->
+    <header class="w-full max-w-2xl flex flex-col gap-3 mb-2 z-10">
+        <!-- Top Stats Row -->
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-purple-950/80 px-4 py-2 rounded-2xl shadow-sm flex items-center gap-2 text-lg text-amber-400 font-bold border border-amber-500/30">
+                    <i class="fa-solid fa-star text-2xl animate-bounce"></i>
+                    <span id="star-count">0</span>
+                </div>
+                <div class="bg-purple-950/80 px-4 py-2 rounded-2xl shadow-sm flex items-center gap-2 text-lg text-rose-400 font-bold border border-rose-500/30">
+                    <i class="fa-solid fa-fire text-2xl"></i>
+                    <span id="streak-count">0</span>
+                </div>
+            </div>
+
+            <!-- Personalized Greeting Badge -->
+            <div class="bg-gradient-to-r from-orange-600 to-purple-600 text-white font-bold px-4 py-2 rounded-2xl shadow-md text-base flex items-center gap-2 border border-orange-400/40">
+                <span>Hallo, Mavi! 🎃</span>
+            </div>
+
+            <!-- Settings Button -->
+            <button onclick="openSettingsModal()" class="bg-purple-950/80 hover:bg-purple-900 p-3 rounded-2xl shadow-sm text-amber-300 border border-orange-500/30 transition text-lg">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+        </div>
+
+        <!-- Reward Progress Track Bar -->
+        <div class="bg-purple-950/80 p-3 rounded-2xl shadow-sm border border-purple-500/30 flex flex-col gap-1.5">
+            <div class="flex justify-between items-center text-xs font-bold text-purple-200 px-1">
+                <span id="progress-text">Richtige Antworten: 0 von 10</span>
+                <span id="reward-target-text" class="text-orange-400">Ziel: 🎃 Kürbis</span>
+            </div>
+            <!-- Track container -->
+            <div class="relative w-full bg-black/50 h-6 rounded-full overflow-visible flex items-center px-1 border border-purple-500/20">
+                <!-- Progress Fill -->
+                <div id="progress-fill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-orange-500 to-emerald-400 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(57,255,20,0.5)]" style="width: 0%;"></div>
+                <!-- Moving Runner (Mavi) -->
+                <div id="runner" class="runner-avatar absolute top-1/2 -translate-y-1/2 text-2xl z-10 filter drop-shadow" style="left: 0%;">
+                    👻
+                </div>
+                <!-- Target Reward Icon -->
+                <div id="reward-flag" class="absolute right-1 top-1/2 -translate-y-1/2 text-2xl z-10 animate-pulse">
+                    🎃
+                </div>
+            </div>
+        </div>
     </header>
 
-    <!-- Progress Track Card -->
-    <div class="progress-card">
-      <div class="reward-header">
-        <span id="targetRewardText">Ziel: 🎃 Kürbiskürbis</span>
-        <span id="progressRatioText">0 / 10 Gelöst</span>
-      </div>
-      <div class="progress-track-bg">
-        <div class="progress-bar-fill" id="progressBarFill"></div>
-        <div class="progress-ghost-icon" id="ghostIcon" style="left: 0%;">👻</div>
-      </div>
-    </div>
-
-    <!-- Main Question Card -->
-    <div class="card">
-      <div class="question-display" id="questionText">34 + 45</div>
-      <div class="input-wrapper">
-        <input type="number" id="answerInput" class="answer-input" placeholder="?" autocomplete="off" pattern="\d*">
-        <button class="btn-submit" onclick="checkAnswer()">PRÜFEN</button>
-      </div>
-      <div class="feedback-msg" id="feedbackMsg"></div>
-    </div>
-  </div>
-
-  <!-- Explanation Modal (Step-by-step Zehner/Einer) -->
-  <div class="modal-overlay" id="explModal">
-    <div class="explanation-card">
-      <div class="expl-header">
-        <h2>🪄 Zauber-Schritte für Mavi</h2>
-        <div class="audio-indicator" id="audioIndicator" style="display:none;">
-          <span class="audio-wave"></span>
-          <span>Liest vor...</span>
-        </div>
-      </div>
-
-      <div class="step-visual-box" id="stepVisualBox">
-        <!-- Visuals injected by JS -->
-      </div>
-
-      <div class="expl-text" id="explText">
-        Anleitung wird geladen...
-      </div>
-
-      <div class="nav-buttons">
-        <button class="btn-secondary" id="btnPrevStep" onclick="changeExplStep(-1)">⬅️ Zurück</button>
-        <button class="btn-secondary" onclick="replayAudio()">🔊 Anhören</button>
-        <button class="btn-next-step" id="btnNextStep" onclick="changeExplStep(1)">Weiter ➡️</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Settings Modal -->
-  <div class="modal-overlay" id="settingsModal">
-    <div class="settings-modal">
-      <div class="expl-header">
-        <h2>⚙️ Einstellungen</h2>
-        <button class="icon-btn" onclick="closeSettings()">✖️</button>
-      </div>
-
-      <div class="form-group">
-        <label>OpenAI API Key (Optional für GPT/TTS)</label>
-        <input type="password" id="apiKeyInput" class="form-control" placeholder="sk-...">
-      </div>
-
-      <div class="form-group">
-        <label>Anzahl der Fragen im Test</label>
-        <select id="questionCountSelect" class="form-control">
-          <option value="5">5 Fragen</option>
-          <option value="10" selected>10 Fragen</option>
-          <option value="15">15 Fragen</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Mavis Belohnung wählen 🎁</label>
-        <div class="reward-select-grid">
-          <div class="reward-opt selected" onclick="selectReward(this, '🎃 Kürbiskürbis')">🎃 Kürbis</div>
-          <div class="reward-opt" onclick="selectReward(this, '🍦 Dondurma')">🍦 Dondurma</div>
-          <div class="reward-opt" onclick="selectReward(this, '📺 Çizgi Film')">📺 Çizgi Film</div>
-          <div class="reward-opt" onclick="selectReward(this, '🍿 Popcorn')">🍿 Popcorn</div>
-        </div>
-      </div>
-
-      <button class="btn-submit" style="margin-top:10px; width:100%;" onclick="saveSettings()">SPEICHERN</button>
-    </div>
-  </div>
-
-  <!-- Celebration Modal -->
-  <div class="modal-overlay" id="celebrationModal">
-    <div class="celebration-card">
-      <div class="reward-badge-big" id="celebIcon">🎃</div>
-      <h2>BRAVO MAVI! 🎉</h2>
-      <p style="font-size: 1.1rem; color: #d1c4e9;" id="celebMsg">
-        Du hast alle Aufgaben richtig gelöst und deine Belohnung freigeschaltet!
-      </p>
-      <button class="btn-submit" onclick="restartTest()">NEUES SPIEL 🚀</button>
-    </div>
-  </div>
-
-  <script>
-    let state = {
-      apiKey: localStorage.getItem('mathe_api_key') || '',
-      totalQuestions: parseInt(localStorage.getItem('mathe_q_count')) || 10,
-      reward: localStorage.getItem('mathe_reward') || '🎃 Kürbiskürbis',
-      correctCount: 0,
-      currentNum1: 0,
-      currentNum2: 0,
-      isAddition: true,
-      prefetchedNext: null,
-      explStep: 0,
-      explStepsData: []
-    };
-
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep(freq, duration) {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    }
-
-    window.onload = () => {
-      document.getElementById('apiKeyInput').value = state.apiKey;
-      document.getElementById('questionCountSelect').value = state.totalQuestions;
-      updateRewardUI();
-      generateQuestion();
-      
-      document.getElementById('answerInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') checkAnswer();
-      });
-    };
-
-    function focusAndSelectInput() {
-      const inp = document.getElementById('answerInput');
-      setTimeout(() => {
-        inp.focus();
-        inp.select();
-      }, 50);
-    }
-
-    function updateRewardUI() {
-      document.getElementById('targetRewardText').innerText = `Ziel: ${state.reward}`;
-      updateProgressBar();
-    }
-
-    function updateProgressBar() {
-      const pct = Math.min((state.correctCount / state.totalQuestions) * 100, 100);
-      document.getElementById('progressBarFill').style.width = pct + '%';
-      document.getElementById('ghostIcon').style.left = pct + '%';
-      document.getElementById('progressRatioText').innerText = `${state.correctCount} / ${state.totalQuestions} Gelöst`;
-    }
-
-    function createMathProblem() {
-      const isAdd = Math.random() > 0.3;
-      let n1, n2;
-      if (isAdd) {
-        n1 = Math.floor(Math.random() * 50) + 15;
-        n2 = Math.floor(Math.random() * (95 - n1)) + 10;
-      } else {
-        n1 = Math.floor(Math.random() * 60) + 35;
-        n2 = Math.floor(Math.random() * (n1 - 10)) + 5;
-      }
-      return { n1, n2, isAdd };
-    }
-
-    function generateQuestion() {
-      if (state.prefetchedNext) {
-        state.currentNum1 = state.prefetchedNext.n1;
-        state.currentNum2 = state.prefetchedNext.n2;
-        state.isAddition = state.prefetchedNext.isAdd;
-      } else {
-        const prob = createMathProblem();
-        state.currentNum1 = prob.n1;
-        state.currentNum2 = prob.n2;
-        state.isAddition = prob.isAdd;
-      }
-
-      state.prefetchedNext = createMathProblem();
-
-      document.getElementById('questionText').innerText = 
-        `${state.currentNum1} ${state.isAddition ? '+' : '-'} ${state.currentNum2}`;
-      document.getElementById('answerInput').value = '';
-      document.getElementById('feedbackMsg').innerText = '';
-      
-      focusAndSelectInput();
-      prepareExplanationData();
-    }
-
-    function checkAnswer() {
-      const userVal = parseInt(document.getElementById('answerInput').value);
-      if (isNaN(userVal)) return;
-
-      const expected = state.isAddition ? 
-        (state.currentNum1 + state.currentNum2) : (state.currentNum1 - state.currentNum2);
-
-      const fb = document.getElementById('feedbackMsg');
-
-      if (userVal === expected) {
-        playBeep(587, 0.15);
-        setTimeout(() => playBeep(880, 0.2), 150);
+    <!-- Main Game Box -->
+    <main class="w-full max-w-lg glass-panel rounded-3xl p-6 md:p-8 shadow-2xl card-bounce relative my-auto z-10">
         
-        fb.className = "feedback-msg correct";
-        fb.innerText = `Bravo Mavi! 🎉 Das ist absolut richtig!`;
-        state.correctCount++;
-        updateProgressBar();
+        <!-- Mode / AI Badge -->
+        <div class="flex justify-between items-center mb-4">
+            <span id="source-badge" class="text-xs font-semibold px-3 py-1 bg-purple-900/80 text-orange-300 rounded-full border border-orange-500/30">
+                Halloween Edition • Zahlenraum 100 🎯
+            </span>
+            <span id="op-mode-display" class="text-xs font-semibold px-3 py-1 bg-orange-950/80 text-orange-400 rounded-full border border-orange-500/30">
+                Toplama ve Çıkarma (+ / -)
+            </span>
+        </div>
 
-        if (state.correctCount >= state.totalQuestions) {
-          setTimeout(showCelebration, 600);
-        } else {
-          setTimeout(generateQuestion, 800);
+        <!-- Equation Display -->
+        <div class="text-center my-6">
+            <div id="equation-display" class="text-5xl md:text-6xl font-extrabold text-white tracking-wider flex justify-center items-center gap-3 drop-shadow-[0_0_10px_rgba(255,122,0,0.4)]">
+                <span id="num1">34</span>
+                <span id="operator" class="text-orange-400">+</span>
+                <span id="num2">45</span>
+                <span class="text-gray-500">=</span>
+                <span id="user-answer-preview" class="inline-block min-w-[75px] border-b-4 border-orange-500 text-orange-400 min-h-[60px] flex items-center justify-center">?</span>
+            </div>
+        </div>
+
+        <!-- Numpad Keyboard -->
+        <div class="grid grid-cols-3 gap-3 my-4">
+            <button onclick="appendNum('1')" class="pulse-btn bg-[#180d26] hover:bg-purple-900 border-2 border-orange-500/30 text-2xl font-bold py-3 rounded-2xl shadow-sm text-white transition">1</button>
+            <button onclick="appendNum('2')" class="pulse-btn bg-[#180d26] hover:bg-purple-900 border-2 border-orange-500/30 text-2xl font-bold py-3 rounded-2xl shadow-sm text-white transition">2</button>
+            <button onclick="appendNum('3')" class="pulse-btn bg-[#180d26] hover:bg-purple-900 border-2 border-orange-500/30 text-2xl font-bold py-3 rounded-2xl shadow-sm text-white transition">3</button>
+            <button onclick="appendNum('4')" class="pulse-btn bg-[#180d26] hover:bg-purple-900 border-2 border-orange-500/30 text-2xl font-bold py-3 rounded-2xl shadow-sm text-white transition">4</button>
+            <button onclick="appendNum('5')" class="pulse-btn bg-[#180d26] hover:bg-purple-900 border-2 border-orange-500/30 text-2xl font-bold py-3 rounded-2xl shadow-sm text-white transition">5</button>
+            <button onclick="appendNum('6')" class="pulse-btn bg-[#180d26] hover:bg-purple-900 border-2 border-orange-500/30 text-2xl font-bold py-3 rounded-2xl shadow-sm text-white transition">6</button>
+            <button onclick="appendNum('7')" class="pulse-btn bg-[#180d26] hover:bg-purple-900 border-2 border-orange-500/30 text-2xl font-bold py-3 rounded-2xl shadow-sm text-white transition">7</button>
+            <button onclick="appendNum('8')" class="pulse-btn bg-[#180d26] hover:bg-purple-900 border-2 border-orange-500/30 text-2xl font-bold py-3 rounded-2xl shadow-sm text-white transition">8</button>
+            <button onclick="appendNum('9')" class="pulse-btn bg-[#180d26] hover:bg-purple-900 border-2 border-orange-500/30 text-2xl font-bold py-3 rounded-2xl shadow-sm text-white transition">9</button>
+            <button onclick="clearAnswer()" class="pulse-btn bg-rose-950/80 hover:bg-rose-900 border-2 border-rose-500/30 text-2xl font-bold py-3 rounded-2xl text-rose-400 transition"><i class="fa-solid fa-delete-left"></i></button>
+            <button onclick="appendNum('0')" class="pulse-btn bg-[#180d26] hover:bg-purple-900 border-2 border-orange-500/30 text-2xl font-bold py-3 rounded-2xl shadow-sm text-white transition">0</button>
+            <button onclick="submitAnswer()" class="pulse-btn bg-emerald-600 hover:bg-emerald-500 text-2xl font-bold py-3 rounded-2xl text-white shadow-lg shadow-emerald-900 transition"><i class="fa-solid fa-check"></i></button>
+        </div>
+
+        <!-- Feedback Banner -->
+        <div id="feedback-message" class="hidden text-center text-xl font-bold p-3 rounded-2xl my-2"></div>
+
+    </main>
+
+    <!-- Interactive Visual Explanation Modal with Synchronized German TTS -->
+    <div id="explanation-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-[#1d102e] rounded-3xl p-6 max-w-lg w-full shadow-2xl border-2 border-purple-500 relative overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div class="text-center mb-3">
+                <div class="flex items-center justify-center gap-2">
+                    <span class="bg-purple-900/80 text-orange-300 font-bold px-4 py-1.5 rounded-full text-xs md:text-sm border border-purple-500/40">
+                        💡 Zehner und Einer trennen
+                    </span>
+                    <button id="tts-audio-btn" onclick="toggleCurrentStepSpeech()" class="bg-indigo-950 hover:bg-indigo-900 text-emerald-400 font-bold px-3 py-1.5 rounded-full text-xs md:text-sm flex items-center gap-1.5 transition border border-emerald-500/30">
+                        <span class="audio-wave" id="tts-wave-icon" style="display:none;">
+                            <div></div><div></div><div></div>
+                        </span>
+                        <i class="fa-solid fa-volume-high" id="tts-icon"></i>
+                        <span id="tts-btn-label">Anhören 🔊</span>
+                    </button>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-white mt-2">Mavi, komm wir machen das zusammen! ✨</h3>
+            </div>
+
+            <!-- Dynamic Interactive Animation Canvas -->
+            <div id="anim-stage" class="bg-[#120820] p-4 rounded-2xl border border-purple-500/20 min-h-[220px] flex flex-col justify-center items-center my-2 gap-3 relative">
+                <!-- Injected Step Content -->
+            </div>
+
+            <!-- Step controls -->
+            <div class="flex items-center justify-between gap-2 my-2">
+                <button id="prev-step-btn" onclick="stepPrev()" class="bg-purple-950 hover:bg-purple-900 text-purple-200 font-bold px-4 py-2 rounded-xl text-sm transition border border-purple-500/30">
+                    <i class="fa-solid fa-arrow-left"></i> Zurück
+                </button>
+                <div id="step-indicator" class="text-sm font-bold text-purple-300">
+                    Schritt 1 / 4
+                </div>
+                <button id="next-step-btn" onclick="stepNext()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2 rounded-xl text-sm transition shadow-md">
+                    Weiter <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <button onclick="closeExplanationModal()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-bold py-3.5 rounded-2xl shadow-md transition mt-2 flex items-center justify-center gap-2">
+                <span>Anladım, Yeni Soruya Geç!</span> 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- Reward Celebration Modal -->
+    <div id="reward-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-[#1d102e] rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border-4 border-emerald-500 text-center card-bounce">
+            <div class="text-6xl my-2 animate-bounce" id="celebration-emoji">
+                🎃
+            </div>
+            <h2 class="text-3xl font-extrabold text-emerald-400 mb-1">BRAVO MAVI! 🎉</h2>
+            <p class="text-lg font-bold text-purple-200 mb-4">Du hast alle Fragen richtig gelöst!</p>
+
+            <div class="bg-purple-950/80 border-2 border-purple-500/40 rounded-2xl p-4 my-4">
+                <span class="text-xs font-bold text-orange-400 uppercase tracking-wider block mb-1">Deine Belohnung:</span>
+                <span id="unlocked-reward-title" class="text-2xl font-extrabold text-amber-300">🎃 Kürbis</span>
+            </div>
+
+            <p class="text-sm text-purple-300 mb-6 font-semibold">Mavi ist heute ein echter Mathe-Star! ✨</p>
+
+            <button onclick="restartTest()" class="w-full bg-gradient-to-r from-orange-500 to-purple-600 hover:from-orange-600 hover:to-purple-700 text-white text-xl font-bold py-3.5 rounded-2xl shadow-xl transition">
+                Neuer Test 🔄
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-[#1d102e] rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative border-2 border-orange-500/50">
+            <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-orange-400"></i> Einstellungen für Mavi
+            </h3>
+            
+            <!-- Target correct answers -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-purple-200 mb-2">Benötigte richtige Antworten (Hedef Doğru Sayısı)</label>
+                <select id="questions-count-select" class="w-full p-3 bg-[#120820] border-2 border-purple-500/30 rounded-2xl text-white font-semibold focus:outline-none">
+                    <option value="5">5 Richtige (Schneller Test)</option>
+                    <option value="10" selected>10 Richtige (Standard)</option>
+                    <option value="15">15 Richtige</option>
+                    <option value="20">20 Richtige (Großer Test)</option>
+                </select>
+            </div>
+
+            <!-- Reward Picker -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-purple-200 mb-2">Belohnung wählen (Ödül Seçimi)</label>
+                <select id="reward-select" onchange="toggleCustomRewardInput()" class="w-full p-3 bg-[#120820] border-2 border-purple-500/30 rounded-2xl text-white font-semibold focus:outline-none">
+                    <option value="🎃 Kürbiskürbis">🎃 Kürbis (Kürbiskürbis)</option>
+                    <option value="🍦 Dondurma">🍦 Dondurma (Eis essen)</option>
+                    <option value="🧁 Tatlı">🧁 Süßigkeit (Tatlı/Şekerleme)</option>
+                    <option value="📺 Çizgi Film">📺 Lieblingsserie (Çizgi Film)</option>
+                    <option value="custom">Eigene Belohnung... (Özel Ödül)</option>
+                </select>
+                <input type="text" id="custom-reward-input" placeholder="z.B. Kinobesuch 🍿" class="hidden w-full mt-2 p-3 bg-[#120820] border-2 border-purple-500/30 rounded-2xl text-sm font-semibold text-white">
+            </div>
+
+            <!-- Operation Selector -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-purple-200 mb-2">Rechnenart (İşlem Türü)</label>
+                <select id="op-select" class="w-full p-3 bg-[#120820] border-2 border-purple-500/30 rounded-2xl text-white font-semibold focus:outline-none">
+                    <option value="both">Toplama ve Çıkarma Karışık (+ / -)</option>
+                    <option value="add">Nur Addition (+)</option>
+                    <option value="sub">Nur Subtraktion (-)</option>
+                </select>
+            </div>
+
+            <!-- OpenAI API Key -->
+            <div class="mb-6">
+                <label class="block text-sm font-bold text-purple-200 mb-1">OpenAI API Key (Optional)</label>
+                <input type="password" id="api-key-input" placeholder="sk-..." class="w-full p-3 bg-[#120820] border-2 border-purple-500/30 rounded-2xl text-sm text-white focus:border-orange-500 focus:outline-none">
+                <p class="text-xs text-purple-300 mt-1">Girerse AI soru üretir ve OpenAI TTS ile sesli anlatır; girilmezse yerel ses motoru (Web Speech API) çalışır.</p>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="saveSettings()" class="flex-1 bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded-2xl transition shadow-md">
+                    Speichern
+                </button>
+                <button onclick="closeSettingsModal()" class="flex-1 bg-purple-950 hover:bg-purple-900 text-purple-200 font-bold py-3 rounded-2xl transition border border-purple-500/30">
+                    Abbrechen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // State
+        let currentProblem = { num1: 34, num2: 45, op: '+', answer: 79 };
+        let prefetchedNextProblem = null;
+        let userAnswer = "";
+        let stars = parseInt(localStorage.getItem('mavi_stars') || '0');
+        let streak = 0;
+        
+        let targetCorrectAnswers = parseInt(localStorage.getItem('mavi_test_q_count') || '10');
+        let correctAnswersCount = 0; // MUST reach targetCorrectAnswers to win
+        let selectedReward = localStorage.getItem('mavi_reward') || '🎃 Kürbiskürbis';
+        let rewardEmoji = selectedReward.match(/\p{Extended_Pictographic}/u)?.[0] || '🎁';
+        let opMode = localStorage.getItem('mavi_op_mode') || 'both';
+        let apiKey = localStorage.getItem('openai_api_key') || '';
+
+        // Explanation Modal State
+        let explanationSteps = [];
+        let currentStepIdx = 0;
+
+        // TTS & Audio State (Pre-buffered & zero delay)
+        let isSpeaking = false;
+        let preloadedAudioBlobs = {};
+
+        // Web Audio Context for Sound Effects
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
         }
-      } else {
-        playBeep(220, 0.3);
-        fb.className = "feedback-msg wrong";
-        fb.innerText = `Fast richtig, Mavi! Lass es uns zusammen anschauen... 🪄`;
 
-        setTimeout(openExplanationModal, 700);
-      }
-    }
+        function playTone(freq, type = 'sine', duration = 0.15) {
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
 
-    // Motivational & Clear Step-by-Step German Explanations
-    function prepareExplanationData() {
-      const n1 = state.currentNum1;
-      const n2 = state.currentNum2;
-      const z1 = Math.floor(n1 / 10) * 10;
-      const e1 = n1 % 10;
-      const z2 = Math.floor(n2 / 10) * 10;
-      const e2 = n2 % 10;
+        function playSuccessSound() {
+            playTone(523.25, 'triangle', 0.1);
+            setTimeout(() => playTone(659.25, 'triangle', 0.1), 100);
+            setTimeout(() => playTone(783.99, 'triangle', 0.2), 200);
+        }
 
-      state.explStepsData = [];
+        function playErrorSound() {
+            playTone(220, 'sawtooth', 0.2);
+            setTimeout(() => playTone(185, 'sawtooth', 0.3), 150);
+        }
 
-      if (state.isAddition) {
-        state.explStepsData.push({
-          text: `Ganz einfach, Mavi! Wir teilen die Zahlen zuerst in Zehner und Einer auf: ${n1} ist ${z1} und ${e1}. Und ${n2} ist ${z2} und ${e2}.`,
-          z1, e1, z2, e2, phase: 1
+        function playVictorySound() {
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, idx) => {
+                setTimeout(() => playTone(freq, 'triangle', 0.25), idx * 150);
+            });
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('star-count').innerText = stars;
+            document.getElementById('api-key-input').value = apiKey;
+            document.getElementById('questions-count-select').value = targetCorrectAnswers;
+            document.getElementById('op-select').value = opMode;
+            
+            updateRewardDisplay();
+            updateProgressTrack();
+            generateNextQuestion();
         });
-        state.explStepsData.push({
-          text: `Schritt 1: Wir rechnen zuerst nur die blauen Zehner zusammen: ${z1} + ${z2} macht zusammen ${z1 + z2}. Great Job!`,
-          sumZ: z1 + z2, phase: 2
-        });
-        state.explStepsData.push({
-          text: `Schritt 2: Jetzt rechnen wir die gelben Einer zusammen: ${e1} + ${e2} macht zusammen ${e1 + e2}. Sehr gut!`,
-          sumE: e1 + e2, phase: 3
-        });
-        state.explStepsData.push({
-          text: `Schritt 3: Am Ende zählen wir Zehner und Einer zusammen: ${z1 + z2} + ${e1 + e2} = ${n1 + n2}. Du bist ein echter Mathe-Star, Mavi! 🌟`,
-          total: n1 + n2, phase: 4
-        });
-      } else {
-        // Subtraction
-        state.explStepsData.push({
-          text: `Schau mal, Mavi! Wir ziehen zuerst die blauen Zehner ab: ${n1} minus ${z2} ist gleich ${n1 - z2}. Super!`,
-          phase: 1
-        });
-        state.explStepsData.push({
-          text: `Jetzt ziehen wir noch die gelben Einer ab: ${n1 - z2} minus ${e2} ergibt ${n1 - n2}. Geschafft! 🎉`,
-          phase: 2
-        });
-      }
-    }
 
-    function openExplanationModal() {
-      state.explStep = 0;
-      renderExplStep();
-      document.getElementById('explModal').classList.add('active');
-    }
+        function updateRewardDisplay() {
+            rewardEmoji = selectedReward.match(/\p{Extended_Pictographic}/u)?.[0] || '🎁';
+            document.getElementById('reward-target-text').innerText = `Ziel: ${selectedReward}`;
+            document.getElementById('reward-flag').innerText = rewardEmoji;
+            document.getElementById('celebration-emoji').innerText = rewardEmoji;
+            document.getElementById('unlocked-reward-title').innerText = selectedReward;
+        }
 
-    function renderExplStep() {
-      const data = state.explStepsData[state.explStep];
-      document.getElementById('explText').innerText = data.text;
+        function updateProgressTrack() {
+            document.getElementById('progress-text').innerText = `Richtige Antworten: ${correctAnswersCount} von ${targetCorrectAnswers}`;
+            const pct = Math.min(100, (correctAnswersCount / targetCorrectAnswers) * 100);
+            document.getElementById('progress-fill').style.width = `${pct}%`;
+            document.getElementById('runner').style.left = `calc(${pct}% - 15px)`;
+        }
 
-      const box = document.getElementById('stepVisualBox');
-      box.innerHTML = '';
+        function appendNum(num) {
+            if (userAnswer.length < 3) {
+                userAnswer += num;
+                document.getElementById('user-answer-preview').innerText = userAnswer;
+                playTone(400, 'sine', 0.05);
+            }
+        }
 
-      if (data.phase === 1) {
-        box.innerHTML = `
-          <div class="blocks-container">
-            <div class="zehner-block">Zehner: ${data.z1 || ''}</div>
-            <div class="einer-block">Einer: ${data.e1 || ''}</div>
-          </div>
-          <div style="color:var(--orange-glow); font-weight:900; font-size:1.4rem;">+</div>
-          <div class="blocks-container">
-            <div class="zehner-block">Zehner: ${data.z2 || ''}</div>
-            <div class="einer-block">Einer: ${data.e2 || ''}</div>
-          </div>
-        `;
-      } else if (data.phase === 2) {
-        box.innerHTML = `<div class="zehner-block" style="font-size:1.6rem;">Zehner-Summe: ${data.sumZ || ''}</div>`;
-      } else if (data.phase === 3) {
-        box.innerHTML = `<div class="einer-block" style="font-size:1.6rem;">Einer-Summe: ${data.sumE || ''}</div>`;
-      } else {
-        box.innerHTML = `<div class="zehner-block" style="background:var(--green-accent); font-size:1.8rem; color:#000;">Ergebnis: ${data.total || ''}</div>`;
-      }
+        function clearAnswer() {
+            userAnswer = "";
+            document.getElementById('user-answer-preview').innerText = "?";
+            playTone(300, 'sine', 0.05);
+        }
 
-      document.getElementById('btnPrevStep').style.visibility = state.explStep === 0 ? 'hidden' : 'visible';
-      document.getElementById('btnNextStep').innerText = 
-        state.explStep === state.explStepsData.length - 1 ? 'Ich habe es verstanden! 🚀' : 'Weiter ➡️';
+        // Settings Handlers
+        function openSettingsModal() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
 
-      playCurrentStepAudio();
-    }
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
 
-    function changeExplStep(dir) {
-      state.explStep += dir;
-      if (state.explStep >= state.explStepsData.length) {
-        document.getElementById('explModal').classList.remove('active');
-        generateQuestion();
-      } else {
-        renderExplStep();
-      }
-    }
+        function toggleCustomRewardInput() {
+            const val = document.getElementById('reward-select').value;
+            const customInput = document.getElementById('custom-reward-input');
+            if (val === 'custom') {
+                customInput.classList.remove('hidden');
+            } else {
+                customInput.classList.add('hidden');
+            }
+        }
 
-    function playCurrentStepAudio() {
-      const text = state.explStepsData[state.explStep].text;
-      document.getElementById('audioIndicator').style.display = 'flex';
+        function saveSettings() {
+            apiKey = document.getElementById('api-key-input').value.trim();
+            targetCorrectAnswers = parseInt(document.getElementById('questions-count-select').value);
+            opMode = document.getElementById('op-select').value;
 
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'de-DE';
-        utterance.rate = 0.82;
-        
-        utterance.onend = () => {
-          document.getElementById('audioIndicator').style.display = 'none';
-        };
+            const rewardVal = document.getElementById('reward-select').value;
+            if (rewardVal === 'custom') {
+                selectedReward = document.getElementById('custom-reward-input').value.trim() || '🎃 Kürbiskürbis';
+            } else {
+                selectedReward = rewardVal;
+            }
 
-        window.speechSynthesis.speak(utterance);
-      } else {
-        document.getElementById('audioIndicator').style.display = 'none';
-      }
-    }
+            localStorage.setItem('openai_api_key', apiKey);
+            localStorage.setItem('mavi_test_q_count', targetCorrectAnswers.toString());
+            localStorage.setItem('mavi_op_mode', opMode);
+            localStorage.setItem('mavi_reward', selectedReward);
 
-    function replayAudio() {
-      playCurrentStepAudio();
-    }
+            closeSettingsModal();
+            updateRewardDisplay();
+            restartTest();
+        }
 
-    function openSettings() {
-      document.getElementById('settingsModal').classList.add('active');
-    }
+        function restartTest() {
+            correctAnswersCount = 0;
+            streak = 0;
+            document.getElementById('streak-count').innerText = streak;
+            document.getElementById('reward-modal').classList.add('hidden');
+            updateProgressTrack();
+            generateNextQuestion();
+        }
 
-    function closeSettings() {
-      document.getElementById('settingsModal').classList.remove('active');
-    }
+        // Question Generation with Pre-fetching for zero delay
+        function getSelectedOp() {
+            let op = '+';
+            if (opMode === 'sub') op = '-';
+            else if (opMode === 'both') op = Math.random() > 0.5 ? '+' : '-';
+            return op;
+        }
 
-    function selectReward(el, rewardName) {
-      document.querySelectorAll('.reward-opt').forEach(opt => opt.classList.remove('selected'));
-      el.classList.add('selected');
-      state.reward = rewardName;
-    }
+        function generateLocalQuestion(op) {
+            let n1, n2, ans;
+            if (op === '+') {
+                n1 = Math.floor(Math.random() * 55) + 14; 
+                n2 = Math.floor(Math.random() * (98 - n1)) + 11;
+                ans = n1 + n2;
+            } else {
+                n1 = Math.floor(Math.random() * 65) + 25; 
+                n2 = Math.floor(Math.random() * (n1 - 10)) + 5;
+                ans = n1 - n2;
+            }
+            return { num1: n1, num2: n2, op: op, answer: ans };
+        }
 
-    function saveSettings() {
-      state.apiKey = document.getElementById('apiKeyInput').value;
-      state.totalQuestions = parseInt(document.getElementById('questionCountSelect').value);
-      
-      localStorage.setItem('mathe_api_key', state.apiKey);
-      localStorage.setItem('mathe_q_count', state.totalQuestions);
-      localStorage.setItem('mathe_reward', state.reward);
+        async function generateNextQuestion() {
+            userAnswer = "";
+            document.getElementById('user-answer-preview').innerText = "?";
 
-      updateRewardUI();
-      closeSettings();
-      restartTest();
-    }
+            if (prefetchedNextProblem) {
+                currentProblem = prefetchedNextProblem;
+                prefetchedNextProblem = null;
+            } else {
+                let op = getSelectedOp();
+                currentProblem = generateLocalQuestion(op);
+            }
 
-    function showCelebration() {
-      document.getElementById('celebIcon').innerText = state.reward.split(' ')[0] || '🎃';
-      document.getElementById('celebrationModal').classList.add('active');
-      
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.6 },
-        colors: ['#ff7a00', '#9d4edd', '#39ff14', '#ffea00']
-      });
-    }
+            document.getElementById('num1').innerText = currentProblem.num1;
+            document.getElementById('num2').innerText = currentProblem.num2;
+            document.getElementById('operator').innerText = currentProblem.op;
 
-    function restartTest() {
-      state.correctCount = 0;
-      document.getElementById('celebrationModal').classList.remove('active');
-      updateProgressBar();
-      generateQuestion();
-    }
-  </script>
+            // Background pre-fetch next question & pre-buffer TTS audio for zero delay
+            setTimeout(() => {
+                let nextOp = getSelectedOp();
+                prefetchedNextProblem = generateLocalQuestion(nextOp);
+            }, 100);
+        }
+
+        // Answer Submission
+        function submitAnswer() {
+            if (!userAnswer) return;
+
+            const val = parseInt(userAnswer);
+            const feedbackEl = document.getElementById('feedback-message');
+
+            if (val === currentProblem.answer) {
+                playSuccessSound();
+                stars += 2;
+                streak += 1;
+                correctAnswersCount += 1;
+
+                document.getElementById('star-count').innerText = stars;
+                document.getElementById('streak-count').innerText = streak;
+                localStorage.setItem('mavi_stars', stars.toString());
+
+                confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
+
+                feedbackEl.className = "text-center text-xl font-bold p-3 rounded-2xl mb-2 bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 block card-bounce";
+                feedbackEl.innerText = getMaviPraise();
+
+                setTimeout(() => {
+                    feedbackEl.className = "hidden";
+                    updateProgressTrack();
+
+                    if (correctAnswersCount >= targetCorrectAnswers) {
+                        triggerTestCompletion();
+                    } else {
+                        generateNextQuestion();
+                    }
+                }, 1400);
+
+            } else {
+                playErrorSound();
+                streak = 0;
+                document.getElementById('streak-count').innerText = streak;
+
+                feedbackEl.className = "text-center text-lg font-bold p-3 rounded-2xl mb-2 bg-rose-950/80 text-rose-300 border border-rose-500/40 block";
+                feedbackEl.innerText = "Fast richtig, Mavi! Wir schauen uns das zusammen an 🧐";
+
+                setTimeout(() => {
+                    feedbackEl.className = "hidden";
+                    prepareExplanationSteps();
+                    openExplanationModal();
+                }, 1200);
+            }
+        }
+
+        function getMaviPraise() {
+            const praises = [
+                "Bravo Mavi! 🎉",
+                "Super gemacht, Mavi! 🌟",
+                "Mavi, du bist ein Mathe-Star! 🚀",
+                "Toll gelöst, Mavi! 👏",
+                "Perfekt, Mavi! Weiter so! ✨"
+            ];
+            return praises[Math.floor(Math.random() * praises.length)];
+        }
+
+        function triggerTestCompletion() {
+            playVictorySound();
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+            document.getElementById('reward-modal').classList.remove('hidden');
+        }
+
+        // Animated "Zehner und Einer trennen" Explanation Logic with slower speech rate (0.82x)
+        function prepareExplanationSteps() {
+            const n1 = currentProblem.num1;
+            const n2 = currentProblem.num2;
+            const isAdd = currentProblem.op === '+';
+
+            const z1 = Math.floor(n1 / 10) * 10;
+            const e1 = n1 % 10;
+            const z2 = Math.floor(n2 / 10) * 10;
+            const e2 = n2 % 10;
+
+            if (isAdd) {
+                const zSum = z1 + z2;
+                const eSum = e1 + e2;
+                const total = zSum + eSum;
+
+                explanationSteps = [
+                    {
+                        stepText: "Schritt 1: Zahl zerlegen",
+                        spokenText: `Ganz einfach, Mavi! Wir teilen die Zahlen zuerst in blaue Zehner und gelbe Einer auf: ${n1} ist ${z1} und ${e1}, und ${n2} ist ${z2} und ${e2}.`,
+                        html: `
+                            <div class="text-center font-bold text-purple-200 text-sm mb-2">Mavi, wir teilen die Zahlen in Zehner (blau) und Einer (gelb):</div>
+                            <div class="flex justify-center items-center gap-4 text-xl font-bold text-white">
+                                <div class="flex flex-col items-center">
+                                    <span class="text-2xl mb-1">${n1}</span>
+                                    <div class="flex gap-1">
+                                        <span class="tens-block px-3 py-1 rounded-xl text-sm">${z1}</span>
+                                        <span class="ones-block px-3 py-1 rounded-xl text-sm">${e1}</span>
+                                    </div>
+                                </div>
+                                <span class="text-2xl text-orange-400">+</span>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-2xl mb-1">${n2}</span>
+                                    <div class="flex gap-1">
+                                        <span class="tens-block px-3 py-1 rounded-xl text-sm">${z2}</span>
+                                        <span class="ones-block px-3 py-1 rounded-xl text-sm">${e2}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    },
+                    {
+                        stepText: "Schritt 2: Zehner zusammenrechnen",
+                        spokenText: `Zuerst rechnen wir die blauen Zehner zusammen: ${z1} plus ${z2} macht zusammen ${zSum}.`,
+                        html: `
+                            <div class="text-center font-bold text-purple-200 text-sm mb-2">Zuerst rechnen wir die blauen Zehner zusammen:</div>
+                            <div class="text-3xl font-extrabold tens-block px-6 py-3 rounded-2xl">
+                                ${z1} + ${z2} = ${zSum}
+                            </div>
+                        `
+                    },
+                    {
+                        stepText: "Schritt 3: Einer zusammenrechnen",
+                        spokenText: `Jetzt rechnen wir die gelben Einer zusammen: ${e1} plus ${e2} macht zusammen ${eSum}.`,
+                        html: `
+                            <div class="text-center font-bold text-purple-200 text-sm mb-2">Jetzt rechnen wir die gelben Einer zusammen:</div>
+                            <div class="text-3xl font-extrabold ones-block px-6 py-3 rounded-2xl">
+                                ${e1} + ${e2} = ${eSum}
+                            </div>
+                        `
+                    },
+                    {
+                        stepText: "Schritt 4: Alles zusammenfügen",
+                        spokenText: `Zum Schluss fügen wir Zehner und Einer zusammen: ${zSum} plus ${eSum} ist gleich ${total}. Super gemacht, Mavi!`,
+                        html: `
+                            <div class="text-center font-bold text-purple-200 text-sm mb-2">Zum Schluss fügen wir alles zusammen:</div>
+                            <div class="text-2xl font-extrabold bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-[0_0_15px_rgba(57,255,20,0.5)]">
+                                ${zSum} + ${eSum} = ${total} 🌟
+                            </div>
+                        `
+                    }
+                ];
+            } else {
+                const zDiff = n1 - z2;
+                const total = zDiff - e2;
+
+                explanationSteps = [
+                    {
+                        stepText: "Schritt 1: Zehner abziehen",
+                        spokenText: `Schau mal, Mavi! Wir ziehen zuerst die blauen Zehner ab: ${n1} minus ${z2} ist gleich ${zDiff}.`,
+                        html: `
+                            <div class="text-center font-bold text-purple-200 text-sm mb-2">Wir ziehen zuerst die Zehner ab:</div>
+                            <div class="text-3xl font-extrabold tens-block px-6 py-3 rounded-2xl">
+                                ${n1} - ${z2} = ${zDiff}
+                            </div>
+                        `
+                    },
+                    {
+                        stepText: "Schritt 2: Einer abziehen",
+                        spokenText: `Jetzt ziehen wir noch die gelben Einer ab: ${zDiff} minus ${e2} ergibt ${total}. Geschafft, Mavi!`,
+                        html: `
+                            <div class="text-center font-bold text-purple-200 text-sm mb-2">Jetzt ziehen wir noch die Einer ab:</div>
+                            <div class="text-2xl font-extrabold bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-[0_0_15px_rgba(57,255,20,0.5)]">
+                                ${zDiff} - ${e2} = ${total} 🎉
+                            </div>
+                        `
+                    }
+                ];
+            }
+
+            currentStepIdx = 0;
+            preloadStepAudio();
+        }
+
+        function openExplanationModal() {
+            document.getElementById('explanation-modal').classList.remove('hidden');
+            renderCurrentStep();
+        }
+
+        function closeExplanationModal() {
+            document.getElementById('explanation-modal').classList.add('hidden');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            generateNextQuestion();
+        }
+
+        function renderCurrentStep() {
+            const step = explanationSteps[currentStepIdx];
+            document.getElementById('anim-stage').innerHTML = step.html;
+            document.getElementById('step-indicator').innerText = `Schritt ${currentStepIdx + 1} / ${explanationSteps.length}`;
+
+            document.getElementById('prev-step-btn').disabled = (currentStepIdx === 0);
+            document.getElementById('prev-step-btn').style.opacity = (currentStepIdx === 0) ? '0.5' : '1';
+
+            const nextBtn = document.getElementById('next-step-btn');
+            if (currentStepIdx === explanationSteps.length - 1) {
+                nextBtn.innerHTML = `Fertig <i class="fa-solid fa-check"></i>`;
+            } else {
+                nextBtn.innerHTML = `Weiter <i class="fa-solid fa-arrow-right"></i>`;
+            }
+
+            playCurrentStepSpeech();
+        }
+
+        function stepPrev() {
+            if (currentStepIdx > 0) {
+                currentStepIdx--;
+                renderCurrentStep();
+            }
+        }
+
+        function stepNext() {
+            if (currentStepIdx < explanationSteps.length - 1) {
+                currentStepIdx++;
+                renderCurrentStep();
+            } else {
+                closeExplanationModal();
+            }
+        }
+
+        // Pre-buffered zero-delay TTS logic (OpenAI TTS or Web Speech API fallback at 0.82x speed)
+        async function preloadStepAudio() {
+            preloadedAudioBlobs = {};
+            for (let i = 0; i < explanationSteps.length; i++) {
+                const text = explanationSteps[i].spokenText;
+                if (apiKey) {
+                    try {
+                        const res = await fetch("https://api.openai.com/v1/audio/speech", {
+                            method: "POST",
+                            headers: {
+                                "Authorization": `Bearer ${apiKey}`,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                model: "tts-1",
+                                input: text,
+                                voice: "nova"
+                            })
+                        });
+                        const blob = await res.blob();
+                        preloadedAudioBlobs[i] = URL.createObjectURL(blob);
+                    } catch (e) {}
+                }
+            }
+        }
+
+        function playCurrentStepSpeech() {
+            const text = explanationSteps[currentStepIdx].spokenText;
+            const waveIcon = document.getElementById('tts-wave-icon');
+            const btnLabel = document.getElementById('tts-btn-label');
+            
+            waveIcon.style.display = 'inline-block';
+            btnLabel.innerText = "Spricht...";
+
+            if (preloadedAudioBlobs[currentStepIdx]) {
+                const audio = new Audio(preloadedAudioBlobs[currentStepIdx]);
+                audio.onended = () => {
+                    waveIcon.style.display = 'none';
+                    btnLabel.innerText = "Anhören 🔊";
+                };
+                audio.play();
+            } else if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'de-DE';
+                utterance.rate = 0.82; // Slower, clearer speech rate for 2nd graders
+                
+                utterance.onend = () => {
+                    waveIcon.style.display = 'none';
+                    btnLabel.innerText = "Anhören 🔊";
+                };
+                window.speechSynthesis.speak(utterance);
+            } else {
+                waveIcon.style.display = 'none';
+                btnLabel.innerText = "Anhören 🔊";
+            }
+        }
+
+        function toggleCurrentStepSpeech() {
+            playCurrentStepSpeech();
+        }
+    </script>
 </body>
 </html>
