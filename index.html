@@ -199,6 +199,8 @@
       color: #fff;
       outline: none;
       box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     .answer-input:focus {
@@ -260,7 +262,7 @@
       border-radius: 24px;
       padding: 20px;
       width: 100%;
-      max-width: 520px;
+      max-width: 540px;
       box-shadow: 0 0 30px rgba(157, 78, 221, 0.4);
       display: flex;
       flex-direction: column;
@@ -285,13 +287,13 @@
     .step-visual-box {
       background: #120820;
       border-radius: 16px;
-      padding: 16px;
+      padding: 18px;
       min-height: 180px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 14px;
       border: 1px dashed rgba(255, 255, 255, 0.15);
     }
 
@@ -310,7 +312,7 @@
       padding: 8px 14px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
-      font-size: 1.1rem;
+      font-size: 1.15rem;
     }
 
     .einer-block {
@@ -320,15 +322,16 @@
       padding: 8px 12px;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(255, 234, 0, 0.5);
-      font-size: 1.1rem;
+      font-size: 1.15rem;
     }
 
     .expl-text {
-      font-size: 1.15rem;
-      font-weight: 700;
+      font-size: 1.2rem;
+      font-weight: 800;
       text-align: center;
       color: #f1f1f1;
-      line-height: 1.4;
+      line-height: 1.5;
+      padding: 0 10px;
     }
 
     .audio-indicator {
@@ -517,7 +520,7 @@
   <div class="modal-overlay" id="explModal">
     <div class="explanation-card">
       <div class="expl-header">
-        <h2>🪄 Lösungsschritte</h2>
+        <h2>🪄 Zauber-Schritte für Mavi</h2>
         <div class="audio-indicator" id="audioIndicator" style="display:none;">
           <span class="audio-wave"></span>
           <span>Liest vor...</span>
@@ -589,7 +592,6 @@
   </div>
 
   <script>
-    // State management
     let state = {
       apiKey: localStorage.getItem('mathe_api_key') || '',
       totalQuestions: parseInt(localStorage.getItem('mathe_q_count')) || 10,
@@ -600,12 +602,9 @@
       isAddition: true,
       prefetchedNext: null,
       explStep: 0,
-      explStepsData: [],
-      audioCache: {},
-      isAudioPlaying: false
+      explStepsData: []
     };
 
-    // Pre-buffered Web Audio API synth
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playBeep(freq, duration) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -621,7 +620,6 @@
       osc.stop(audioCtx.currentTime + duration);
     }
 
-    // App Initialization
     window.onload = () => {
       document.getElementById('apiKeyInput').value = state.apiKey;
       document.getElementById('questionCountSelect').value = state.totalQuestions;
@@ -632,6 +630,14 @@
         if (e.key === 'Enter') checkAnswer();
       });
     };
+
+    function focusAndSelectInput() {
+      const inp = document.getElementById('answerInput');
+      setTimeout(() => {
+        inp.focus();
+        inp.select();
+      }, 50);
+    }
 
     function updateRewardUI() {
       document.getElementById('targetRewardText').innerText = `Ziel: ${state.reward}`;
@@ -645,9 +651,8 @@
       document.getElementById('progressRatioText').innerText = `${state.correctCount} / ${state.totalQuestions} Gelöst`;
     }
 
-    // Helper: Generate addition/subtraction (Zahlenraum bis 100)
     function createMathProblem() {
-      const isAdd = Math.random() > 0.3; // 70% addition
+      const isAdd = Math.random() > 0.3;
       let n1, n2;
       if (isAdd) {
         n1 = Math.floor(Math.random() * 50) + 15;
@@ -671,16 +676,14 @@
         state.isAddition = prob.isAdd;
       }
 
-      // Prefetch NEXT question in advance for seamless transition
       state.prefetchedNext = createMathProblem();
 
       document.getElementById('questionText').innerText = 
         `${state.currentNum1} ${state.isAddition ? '+' : '-'} ${state.currentNum2}`;
       document.getElementById('answerInput').value = '';
       document.getElementById('feedbackMsg').innerText = '';
-      document.getElementById('answerInput').focus();
-
-      // Pre-prepare explanation steps & buffer TTS audio
+      
+      focusAndSelectInput();
       prepareExplanationData();
     }
 
@@ -694,11 +697,11 @@
       const fb = document.getElementById('feedbackMsg');
 
       if (userVal === expected) {
-        playBeep(587, 0.15); // High beep
+        playBeep(587, 0.15);
         setTimeout(() => playBeep(880, 0.2), 150);
         
         fb.className = "feedback-msg correct";
-        fb.innerText = `Bravo Mavi! 🎉 Richtig!`;
+        fb.innerText = `Bravo Mavi! 🎉 Das ist absolut richtig!`;
         state.correctCount++;
         updateProgressBar();
 
@@ -708,15 +711,15 @@
           setTimeout(generateQuestion, 800);
         }
       } else {
-        playBeep(220, 0.3); // Low error beep
+        playBeep(220, 0.3);
         fb.className = "feedback-msg wrong";
-        fb.innerText = `Fast, Mavi! Schau dir den Weg an... 🪄`;
+        fb.innerText = `Fast richtig, Mavi! Lass es uns zusammen anschauen... 🪄`;
 
         setTimeout(openExplanationModal, 700);
       }
     }
 
-    // Explanation logic: Zehner und Einer trennen
+    // Motivational & Clear Step-by-Step German Explanations
     function prepareExplanationData() {
       const n1 = state.currentNum1;
       const n2 = state.currentNum2;
@@ -729,35 +732,32 @@
 
       if (state.isAddition) {
         state.explStepsData.push({
-          text: `Wir teilen die Zahlen in Zehner und Einer auf: ${n1} ist ${z1} und ${e1}. ${n2} ist ${z2} und ${e2}.`,
+          text: `Ganz einfach, Mavi! Wir teilen die Zahlen zuerst in Zehner und Einer auf: ${n1} ist ${z1} und ${e1}. Und ${n2} ist ${z2} und ${e2}.`,
           z1, e1, z2, e2, phase: 1
         });
         state.explStepsData.push({
-          text: `Zuerst rechnen wir die Zehner zusammen: ${z1} + ${z2} = ${z1 + z2}.`,
+          text: `Schritt 1: Wir rechnen zuerst nur die blauen Zehner zusammen: ${z1} + ${z2} macht zusammen ${z1 + z2}. Great Job!`,
           sumZ: z1 + z2, phase: 2
         });
         state.explStepsData.push({
-          text: `Dann rechnen wir die Einer zusammen: ${e1} + ${e2} = ${e1 + e2}.`,
+          text: `Schritt 2: Jetzt rechnen wir die gelben Einer zusammen: ${e1} + ${e2} macht zusammen ${e1 + e2}. Sehr gut!`,
           sumE: e1 + e2, phase: 3
         });
         state.explStepsData.push({
-          text: `Am Ende fügen wir alles zusammen: ${z1 + z2} + ${e1 + e2} = ${n1 + n2}. Super gemacht, Mavi!`,
+          text: `Schritt 3: Am Ende zählen wir Zehner und Einer zusammen: ${z1 + z2} + ${e1 + e2} = ${n1 + n2}. Du bist ein echter Mathe-Star, Mavi! 🌟`,
           total: n1 + n2, phase: 4
         });
       } else {
         // Subtraction
         state.explStepsData.push({
-          text: `Wir ziehen zuerst die Zehner ab: ${n1} - ${z2} = ${n1 - z2}.`,
+          text: `Schau mal, Mavi! Wir ziehen zuerst die blauen Zehner ab: ${n1} minus ${z2} ist gleich ${n1 - z2}. Super!`,
           phase: 1
         });
         state.explStepsData.push({
-          text: `Jetzt ziehen wir noch die Einer ab: ${n1 - z2} - ${e2} = ${n1 - n2}.`,
+          text: `Jetzt ziehen wir noch die gelben Einer ab: ${n1 - z2} minus ${e2} ergibt ${n1 - n2}. Geschafft! 🎉`,
           phase: 2
         });
       }
-
-      // Pre-buffer TTS Speech for zero delay
-      preBufferAudio();
     }
 
     function openExplanationModal() {
@@ -779,23 +779,23 @@
             <div class="zehner-block">Zehner: ${data.z1 || ''}</div>
             <div class="einer-block">Einer: ${data.e1 || ''}</div>
           </div>
-          <div style="color:var(--orange-glow); font-weight:800;">+</div>
+          <div style="color:var(--orange-glow); font-weight:900; font-size:1.4rem;">+</div>
           <div class="blocks-container">
             <div class="zehner-block">Zehner: ${data.z2 || ''}</div>
             <div class="einer-block">Einer: ${data.e2 || ''}</div>
           </div>
         `;
       } else if (data.phase === 2) {
-        box.innerHTML = `<div class="zehner-block" style="font-size:1.5rem;">Zehner-Summe: ${data.sumZ || ''}</div>`;
+        box.innerHTML = `<div class="zehner-block" style="font-size:1.6rem;">Zehner-Summe: ${data.sumZ || ''}</div>`;
       } else if (data.phase === 3) {
-        box.innerHTML = `<div class="einer-block" style="font-size:1.5rem;">Einer-Summe: ${data.sumE || ''}</div>`;
+        box.innerHTML = `<div class="einer-block" style="font-size:1.6rem;">Einer-Summe: ${data.sumE || ''}</div>`;
       } else {
         box.innerHTML = `<div class="zehner-block" style="background:var(--green-accent); font-size:1.8rem; color:#000;">Ergebnis: ${data.total || ''}</div>`;
       }
 
       document.getElementById('btnPrevStep').style.visibility = state.explStep === 0 ? 'hidden' : 'visible';
       document.getElementById('btnNextStep').innerText = 
-        state.explStep === state.explStepsData.length - 1 ? 'Verstanden! 🚀' : 'Weiter ➡️';
+        state.explStep === state.explStepsData.length - 1 ? 'Ich habe es verstanden! 🚀' : 'Weiter ➡️';
 
       playCurrentStepAudio();
     }
@@ -804,17 +804,9 @@
       state.explStep += dir;
       if (state.explStep >= state.explStepsData.length) {
         document.getElementById('explModal').classList.remove('active');
-        // Replace wrong question with a brand new one
         generateQuestion();
       } else {
         renderExplStep();
-      }
-    }
-
-    // TTS Speech with Slower Rate for 2nd Graders (0.82x)
-    function preBufferAudio() {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Reset
       }
     }
 
@@ -826,7 +818,7 @@
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'de-DE';
-        utterance.rate = 0.82; // Slower, clearer speech speed
+        utterance.rate = 0.82;
         
         utterance.onend = () => {
           document.getElementById('audioIndicator').style.display = 'none';
@@ -842,7 +834,6 @@
       playCurrentStepAudio();
     }
 
-    // Settings Modal Handlers
     function openSettings() {
       document.getElementById('settingsModal').classList.add('active');
     }
@@ -874,10 +865,9 @@
       document.getElementById('celebIcon').innerText = state.reward.split(' ')[0] || '🎃';
       document.getElementById('celebrationModal').classList.add('active');
       
-      // Fire Halloween Confetti
       confetti({
-        particleCount: 100,
-        spread: 70,
+        particleCount: 120,
+        spread: 80,
         origin: { y: 0.6 },
         colors: ['#ff7a00', '#9d4edd', '#39ff14', '#ffea00']
       });
