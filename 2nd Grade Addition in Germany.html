@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathe-Star für Mavi 🌟</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', cursive, sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        .card-bounce {
+            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .pulse-btn:active {
+            transform: scale(0.92);
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(14px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        /* Tens and Ones Visual Blocks */
+        .tens-block {
+            background-color: #3b82f6; /* Blue for Zehner */
+            color: white;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .ones-block {
+            background-color: #eab308; /* Yellow for Einer */
+            color: white;
+            box-shadow: 0 4px 10px rgba(234, 179, 8, 0.3);
+        }
+
+        /* Smooth combine animation for math explanation */
+        @keyframes combineAnim {
+            0% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.15) translateY(-8px); }
+            100% { transform: scale(1) translateY(0); }
+        }
+
+        .anim-combine {
+            animation: combineAnim 0.8s ease-in-out infinite alternate;
+        }
+
+        /* Progress track runner */
+        .runner-avatar {
+            transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Wave indicator for active audio */
+        .audio-wave {
+            display: inline-block;
+            position: relative;
+            width: 16px;
+            height: 16px;
+        }
+        .audio-wave div {
+            display: inline-block;
+            position: absolute;
+            left: 0;
+            width: 3px;
+            background: #4f46e5;
+            animation: audio-wave 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+        }
+        .audio-wave div:nth-child(1) { left: 0px; animation-delay: -0.24s; }
+        .audio-wave div:nth-child(2) { left: 5px; animation-delay: -0.12s; }
+        .audio-wave div:nth-child(3) { left: 10px; animation-delay: 0s; }
+        @keyframes audio-wave {
+            0% { top: 2px; height: 12px; }
+            50%, 100% { top: 6px; height: 4px; }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen items-center justify-between p-3 md:p-6">
+
+    <!-- Header Section -->
+    <header class="w-full max-w-2xl flex flex-col gap-3 mb-2">
+        <!-- Top Stats Row -->
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-white/90 px-4 py-2 rounded-2xl shadow-sm flex items-center gap-2 text-lg text-amber-500 font-bold border border-amber-200">
+                    <i class="fa-solid fa-star text-2xl animate-bounce"></i>
+                    <span id="star-count">0</span>
+                </div>
+                <div class="bg-white/90 px-4 py-2 rounded-2xl shadow-sm flex items-center gap-2 text-lg text-rose-500 font-bold border border-rose-200">
+                    <i class="fa-solid fa-fire text-2xl"></i>
+                    <span id="streak-count">0</span>
+                </div>
+            </div>
+
+            <!-- Personalized Greeting Badge -->
+            <div class="bg-indigo-600 text-white font-bold px-4 py-2 rounded-2xl shadow-md text-base flex items-center gap-2">
+                <span>Hallo, Mavi! 👋</span>
+            </div>
+
+            <!-- Settings Button -->
+            <button onclick="openSettingsModal()" class="bg-white/90 hover:bg-white p-3 rounded-2xl shadow-sm text-gray-600 border border-gray-200 transition text-lg">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+        </div>
+
+        <!-- Reward Progress Track Bar -->
+        <div class="bg-white/90 p-3 rounded-2xl shadow-sm border border-indigo-100 flex flex-col gap-1.5">
+            <div class="flex justify-between items-center text-xs font-bold text-gray-600 px-1">
+                <span id="progress-text">Richtige Antworten: 0 von 10</span>
+                <span id="reward-target-text" class="text-indigo-600">Ziel: Eis 🍦</span>
+            </div>
+            <!-- Track container -->
+            <div class="relative w-full bg-gray-200 h-6 rounded-full overflow-visible flex items-center px-1">
+                <!-- Progress Fill -->
+                <div id="progress-fill" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-indigo-400 to-emerald-400 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                <!-- Moving Runner (Mavi) -->
+                <div id="runner" class="runner-avatar absolute top-1/2 -translate-y-1/2 text-2xl z-10 filter drop-shadow" style="left: 0%;">
+                    👧
+                </div>
+                <!-- Target Reward Icon -->
+                <div id="reward-flag" class="absolute right-1 top-1/2 -translate-y-1/2 text-2xl z-10 animate-pulse">
+                    🍦
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Box -->
+    <main class="w-full max-w-lg glass-panel rounded-3xl p-6 md:p-8 shadow-2xl card-bounce relative my-auto">
+        
+        <!-- Mode / AI Badge -->
+        <div class="flex justify-between items-center mb-4">
+            <span id="source-badge" class="text-xs font-semibold px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">
+                Klasse 2 • Zahlenraum 100 🎯
+            </span>
+            <span id="op-mode-display" class="text-xs font-semibold px-3 py-1 bg-pink-100 text-pink-700 rounded-full">
+                Toplama ve Çıkarma (+ / -)
+            </span>
+        </div>
+
+        <!-- Equation Display -->
+        <div class="text-center my-6">
+            <div id="equation-display" class="text-5xl md:text-6xl font-extrabold text-gray-800 tracking-wider flex justify-center items-center gap-3">
+                <span id="num1">34</span>
+                <span id="operator" class="text-indigo-600">+</span>
+                <span id="num2">45</span>
+                <span class="text-gray-400">=</span>
+                <span id="user-answer-preview" class="inline-block min-w-[75px] border-b-4 border-indigo-500 text-indigo-600 min-h-[60px] flex items-center justify-center">?</span>
+            </div>
+        </div>
+
+        <!-- Numpad Keyboard -->
+        <div class="grid grid-cols-3 gap-3 my-4">
+            <button onclick="appendNum('1')" class="pulse-btn bg-white hover:bg-indigo-50 border-2 border-indigo-100 text-2xl font-bold py-3 rounded-2xl shadow-sm text-gray-700 transition">1</button>
+            <button onclick="appendNum('2')" class="pulse-btn bg-white hover:bg-indigo-50 border-2 border-indigo-100 text-2xl font-bold py-3 rounded-2xl shadow-sm text-gray-700 transition">2</button>
+            <button onclick="appendNum('3')" class="pulse-btn bg-white hover:bg-indigo-50 border-2 border-indigo-100 text-2xl font-bold py-3 rounded-2xl shadow-sm text-gray-700 transition">3</button>
+            <button onclick="appendNum('4')" class="pulse-btn bg-white hover:bg-indigo-50 border-2 border-indigo-100 text-2xl font-bold py-3 rounded-2xl shadow-sm text-gray-700 transition">4</button>
+            <button onclick="appendNum('5')" class="pulse-btn bg-white hover:bg-indigo-50 border-2 border-indigo-100 text-2xl font-bold py-3 rounded-2xl shadow-sm text-gray-700 transition">5</button>
+            <button onclick="appendNum('6')" class="pulse-btn bg-white hover:bg-indigo-50 border-2 border-indigo-100 text-2xl font-bold py-3 rounded-2xl shadow-sm text-gray-700 transition">6</button>
+            <button onclick="appendNum('7')" class="pulse-btn bg-white hover:bg-indigo-50 border-2 border-indigo-100 text-2xl font-bold py-3 rounded-2xl shadow-sm text-gray-700 transition">7</button>
+            <button onclick="appendNum('8')" class="pulse-btn bg-white hover:bg-indigo-50 border-2 border-indigo-100 text-2xl font-bold py-3 rounded-2xl shadow-sm text-gray-700 transition">8</button>
+            <button onclick="appendNum('9')" class="pulse-btn bg-white hover:bg-indigo-50 border-2 border-indigo-100 text-2xl font-bold py-3 rounded-2xl shadow-sm text-gray-700 transition">9</button>
+            <button onclick="clearAnswer()" class="pulse-btn bg-rose-50 hover:bg-rose-100 border-2 border-rose-200 text-2xl font-bold py-3 rounded-2xl text-rose-600 transition"><i class="fa-solid fa-delete-left"></i></button>
+            <button onclick="appendNum('0')" class="pulse-btn bg-white hover:bg-indigo-50 border-2 border-indigo-100 text-2xl font-bold py-3 rounded-2xl shadow-sm text-gray-700 transition">0</button>
+            <button onclick="submitAnswer()" class="pulse-btn bg-emerald-500 hover:bg-emerald-600 text-2xl font-bold py-3 rounded-2xl text-white shadow-lg shadow-emerald-200 transition"><i class="fa-solid fa-check"></i></button>
+        </div>
+
+        <!-- Feedback Banner -->
+        <div id="feedback-message" class="hidden text-center text-xl font-bold p-3 rounded-2xl my-2"></div>
+
+    </main>
+
+    <!-- Interactive Visual Explanation Modal with Synchronized German TTS -->
+    <div id="explanation-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border-4 border-indigo-300 relative overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div class="text-center mb-3">
+                <div class="flex items-center justify-center gap-2">
+                    <span class="bg-amber-100 text-amber-800 font-bold px-4 py-1.5 rounded-full text-xs md:text-sm">
+                        💡 Zehner und Einer trennen
+                    </span>
+                    <button id="tts-audio-btn" onclick="toggleCurrentStepSpeech()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold px-3 py-1.5 rounded-full text-xs md:text-sm flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-volume-high" id="tts-icon"></i>
+                        <span id="tts-btn-label">Anhören 🔊</span>
+                    </button>
+                </div>
+                <h3 class="text-xl md:text-2xl font-bold text-gray-800 mt-2">Mavi, komm wir machen das zusammen! ✨</h3>
+            </div>
+
+            <!-- Dynamic Interactive Animation Canvas -->
+            <div id="anim-stage" class="bg-indigo-50/70 p-4 rounded-2xl border border-indigo-100 min-h-[220px] flex flex-col justify-center items-center my-2 gap-3 relative">
+                <!-- Injected Step Content -->
+            </div>
+
+            <!-- Step controls -->
+            <div class="flex items-center justify-between gap-2 my-2">
+                <button id="prev-step-btn" onclick="stepPrev()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2 rounded-xl text-sm transition">
+                    <i class="fa-solid fa-arrow-left"></i> Zurück
+                </button>
+                <div id="step-indicator" class="text-sm font-bold text-gray-500">
+                    Schritt 1 / 4
+                </div>
+                <button id="next-step-btn" onclick="stepNext()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition">
+                    Weiter <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <button onclick="closeExplanationModal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-lg font-bold py-3.5 rounded-2xl shadow-md transition mt-2 flex items-center justify-center gap-2">
+                <span>Anladım, Yeni Soruya Geç!</span> 🚀
+            </button>
+        </div>
+    </div>
+
+    <!-- Reward Celebration Modal -->
+    <div id="reward-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border-4 border-amber-300 text-center card-bounce">
+            <div class="text-6xl my-2 animate-bounce" id="celebration-emoji">
+                🍦
+            </div>
+            <h2 class="text-3xl font-extrabold text-indigo-700 mb-1">BRAVO MAVI! 🎉</h2>
+            <p class="text-lg font-bold text-gray-700 mb-4">Du hast alle Fragen richtig gelöst!</p>
+
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 my-4">
+                <span class="text-xs font-bold text-amber-600 uppercase tracking-wider block mb-1">Deine Belohnung:</span>
+                <span id="unlocked-reward-title" class="text-2xl font-extrabold text-amber-800">Eis-Gutschein 🍦</span>
+            </div>
+
+            <p class="text-sm text-gray-500 mb-6 font-semibold">Mavi ist heute ein echter Mathe-Star! ✨</p>
+
+            <button onclick="restartTest()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xl font-bold py-3.5 rounded-2xl shadow-xl transition">
+                Neuer Test 🔄
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-indigo-600"></i> Einstellungen für Mavi
+            </h3>
+            
+            <!-- Target correct answers -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Benötigte richtige Antworten (Hedef Doğru Sayısı)</label>
+                <select id="questions-count-select" class="w-full p-3 border-2 border-gray-200 rounded-2xl text-gray-700 font-semibold focus:outline-none">
+                    <option value="5">5 Richtige (Schneller Test)</option>
+                    <option value="10" selected>10 Richtige (Standard)</option>
+                    <option value="15">15 Richtige</option>
+                    <option value="20">20 Richtige (Großer Test)</option>
+                </select>
+            </div>
+
+            <!-- Reward Picker -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Belohnung wählen (Ödül Seçimi)</label>
+                <select id="reward-select" onchange="toggleCustomRewardInput()" class="w-full p-3 border-2 border-gray-200 rounded-2xl text-gray-700 font-semibold focus:outline-none">
+                    <option value="Eis 🍦">Eis essen 🍦 (Dondurma)</option>
+                    <option value="Süßigkeit 🧁">Süßigkeit 🧁 (Tatlı/Şekerleme)</option>
+                    <option value="Lieblingsserie 📺">Lieblingsserie schauen 📺 (Çizgi Film)</option>
+                    <option value="Spielpark 🛝">Spielpark besuchen 🛝 (Oyun Parkı)</option>
+                    <option value="custom">Eigene Belohnung... (Özel Ödül)</option>
+                </select>
+                <input type="text" id="custom-reward-input" placeholder="z.B. Kinobesuch 🍿" class="hidden w-full mt-2 p-3 border-2 border-gray-200 rounded-2xl text-sm font-semibold">
+            </div>
+
+            <!-- Operation Selector -->
+            <div class="mb-4">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Rechnenart (İşlem Türü)</label>
+                <select id="op-select" class="w-full p-3 border-2 border-gray-200 rounded-2xl text-gray-700 font-semibold focus:outline-none">
+                    <option value="both">Toplama ve Çıkarma Karışık (+ / -)</option>
+                    <option value="add">Nur Addition (+)</option>
+                    <option value="sub">Nur Subtraktion (-)</option>
+                </select>
+            </div>
+
+            <!-- OpenAI API Key -->
+            <div class="mb-6">
+                <label class="block text-sm font-bold text-gray-700 mb-1">OpenAI API Key (Optional)</label>
+                <input type="password" id="api-key-input" placeholder="sk-..." class="w-full p-3 border-2 border-gray-200 rounded-2xl text-sm focus:border-indigo-500 focus:outline-none">
+                <p class="text-xs text-gray-500 mt-1">Girerse AI soru üretir ve OpenAI TTS ile sesli anlatır; girilmezse yerel ses motoru (Web Speech API) çalışır.</p>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="saveSettings()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-2xl transition">
+                    Speichern
+                </button>
+                <button onclick="closeSettingsModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-2xl transition">
+                    Abbrechen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // State
+        let currentProblem = { num1: 34, num2: 45, op: '+', answer: 79 };
+        let userAnswer = "";
+        let stars = parseInt(localStorage.getItem('mavi_stars') || '0');
+        let streak = 0;
+        
+        let targetCorrectAnswers = parseInt(localStorage.getItem('mavi_test_q_count') || '10');
+        let correctAnswersCount = 0; // MUST reach targetCorrectAnswers to win
+        let selectedReward = localStorage.getItem('mavi_reward') || 'Eis 🍦';
+        let rewardEmoji = selectedReward.match(/\p{Extended_Pictographic}/u)?.[0] || '🎁';
+        let opMode = localStorage.getItem('mavi_op_mode') || 'both';
+        let apiKey = localStorage.getItem('openai_api_key') || '';
+
+        // Explanation Modal State
+        let explanationSteps = [];
+        let currentStepIdx = 0;
+
+        // TTS & Audio State
+        let currentAudioElement = null;
+        let isSpeaking = false;
+
+        // Web Audio Context for Sound Effects
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+        }
+
+        function playTone(freq, type = 'sine', duration = 0.15) {
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        function playSuccessSound() {
+            playTone(523.25, 'triangle', 0.1);
+            setTimeout(() => playTone(659.25, 'triangle', 0.1), 100);
+            setTimeout(() => playTone(783.99, 'triangle', 0.2), 200);
+        }
+
+        function playErrorSound() {
+            playTone(220, 'sawtooth', 0.2);
+            setTimeout(() => playTone(185, 'sawtooth', 0.3), 150);
+        }
+
+        function playVictorySound() {
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, idx) => {
+                setTimeout(() => playTone(freq, 'triangle', 0.25), idx * 150);
+            });
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('star-count').innerText = stars;
+            document.getElementById('api-key-input').value = apiKey;
+            document.getElementById('questions-count-select').value = targetCorrectAnswers;
+            document.getElementById('op-select').value = opMode;
+            
+            updateRewardDisplay();
+            updateProgressTrack();
+            generateNextQuestion();
+        });
+
+        function updateRewardDisplay() {
+            rewardEmoji = selectedReward.match(/\p{Extended_Pictographic}/u)?.[0] || '🎁';
+            document.getElementById('reward-target-text').innerText = `Ziel: ${selectedReward}`;
+            document.getElementById('reward-flag').innerText = rewardEmoji;
+            document.getElementById('celebration-emoji').innerText = rewardEmoji;
+            document.getElementById('unlocked-reward-title').innerText = selectedReward;
+        }
+
+        function updateProgressTrack() {
+            document.getElementById('progress-text').innerText = `Richtige Antworten: ${correctAnswersCount} von ${targetCorrectAnswers}`;
+            const pct = Math.min(100, (correctAnswersCount / targetCorrectAnswers) * 100);
+            document.getElementById('progress-fill').style.width = `${pct}%`;
+            document.getElementById('runner').style.left = `calc(${pct}% - 15px)`;
+        }
+
+        function appendNum(num) {
+            if (userAnswer.length < 3) {
+                userAnswer += num;
+                document.getElementById('user-answer-preview').innerText = userAnswer;
+                playTone(400, 'sine', 0.05);
+            }
+        }
+
+        function clearAnswer() {
+            userAnswer = "";
+            document.getElementById('user-answer-preview').innerText = "?";
+            playTone(300, 'sine', 0.05);
+        }
+
+        // Settings Handlers
+        function openSettingsModal() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function toggleCustomRewardInput() {
+            const val = document.getElementById('reward-select').value;
+            const customInput = document.getElementById('custom-reward-input');
+            if (val === 'custom') {
+                customInput.classList.remove('hidden');
+            } else {
+                customInput.classList.add('hidden');
+            }
+        }
+
+        function saveSettings() {
+            apiKey = document.getElementById('api-key-input').value.trim();
+            targetCorrectAnswers = parseInt(document.getElementById('questions-count-select').value);
+            opMode = document.getElementById('op-select').value;
+
+            const rewardVal = document.getElementById('reward-select').value;
+            if (rewardVal === 'custom') {
+                selectedReward = document.getElementById('custom-reward-input').value.trim() || 'Überraschung 🎁';
+            } else {
+                selectedReward = rewardVal;
+            }
+
+            localStorage.setItem('openai_api_key', apiKey);
+            localStorage.setItem('mavi_test_q_count', targetCorrectAnswers.toString());
+            localStorage.setItem('mavi_op_mode', opMode);
+            localStorage.setItem('mavi_reward', selectedReward);
+
+            closeSettingsModal();
+            updateRewardDisplay();
+            restartTest();
+        }
+
+        function restartTest() {
+            correctAnswersCount = 0;
+            streak = 0;
+            document.getElementById('streak-count').innerText = streak;
+            document.getElementById('reward-modal').classList.add('hidden');
+            updateProgressTrack();
+            generateNextQuestion();
+        }
+
+        // Question Generation
+        async function generateNextQuestion() {
+            userAnswer = "";
+            document.getElementById('user-answer-preview').innerText = "?";
+
+            let op = '+';
+            if (opMode === 'sub') op = '-';
+            else if (opMode === 'both') op = Math.random() > 0.5 ? '+' : '-';
+
+            if (apiKey) {
+                document.getElementById('source-badge').innerText = "KI-Modus 🤖";
+                try {
+                    currentProblem = await fetchOpenAIQuestion(op);
+                } catch (e) {
+                    currentProblem = generateLocalQuestion(op);
+                }
+            } else {
+                document.getElementById('source-badge').innerText = "Klasse 2 • Zahlenraum 100 🎯";
+                currentProblem = generateLocalQuestion(op);
+            }
+
+            document.getElementById('num1').innerText = currentProblem.num1;
+            document.getElementById('num2').innerText = currentProblem.num2;
+            document.getElementById('operator').innerText = currentProblem.op;
+        }
+
+        function generateLocalQuestion(op) {
+            let n1, n2, ans;
+            if (op === '+') {
+                n1 = Math.floor(Math.random() * 55) + 14; 
+                n2 = Math.floor(Math.random() * (98 - n1)) + 11;
+                ans = n1 + n2;
+            } else {
+                n1 = Math.floor(Math.random() * 65) + 25; 
+                n2 = Math.floor(Math.random() * (n1 - 10)) + 5;
+                ans = n1 - n2;
+            }
+            return { num1: n1, num2: n2, op: op, answer: ans };
+        }
+
+        async function fetchOpenAIQuestion(op) {
+            const prompt = `Generate a 2nd grade primary school math question in Germany (Zahlenraum 1-100). Operator: "${op}". Output strictly JSON: {"num1": number, "num2": number, "op": "${op}", "answer": number}`;
+            const res = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: prompt }],
+                    temperature: 0.7
+                })
+            });
+            const data = await res.json();
+            const content = data.choices[0].message.content.trim();
+            return JSON.parse(content.replace(/```json|```/g, ""));
+        }
+
+        // Answer Submission
+        function submitAnswer() {
+            if (!userAnswer) return;
+
+            const val = parseInt(userAnswer);
+            const feedbackEl = document.getElementById('feedback-message');
+
+            if (val === currentProblem.answer) {
+                // Correct! Increment correctAnswersCount ONLY on correct answers
+                playSuccessSound();
+                stars += 2;
+                streak += 1;
+                correctAnswersCount += 1;
+
+                document.getElementById('star-count').innerText = stars;
+                document.getElementById('streak-count').innerText = streak;
+                localStorage.setItem('mavi_stars', stars.toString());
+
+                confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
+
+                feedbackEl.className = "text-center text-xl font-bold p-3 rounded-2xl mb-2 bg-emerald-100 text-emerald-800 block card-bounce";
+                feedbackEl.innerText = getMaviPraise();
+
+                setTimeout(() => {
+                    feedbackEl.className = "hidden";
+                    updateProgressTrack();
+
+                    if (correctAnswersCount >= targetCorrectAnswers) {
+                        triggerTestCompletion();
+                    } else {
+                        generateNextQuestion();
+                    }
+                }, 1400);
+
+            } else {
+                // Incorrect! DOES NOT INCREMENT correctAnswersCount
+                playErrorSound();
+                streak = 0;
+                document.getElementById('streak-count').innerText = streak;
+
+                feedbackEl.className = "text-center text-lg font-bold p-3 rounded-2xl mb-2 bg-rose-100 text-rose-800 block";
+                feedbackEl.innerText = "Fast richtig, Mavi! Wir schauen uns das zusammen an 🧐";
+
+                setTimeout(() => {
+                    feedbackEl.className = "hidden";
+                    prepareExplanationSteps();
+                    openExplanationModal();
+                }, 1200);
+            }
+        }
+
+        function getMaviPraise() {
+            const praises = [
+                "Bravo Mavi! 🎉",
+                "Super gemacht, Mavi! 🌟",
+                "Mavi, du bist ein Mathe-Star! 🚀",
+                "Toll gelöst, Mavi! 👏",
+                "Perfekt, Mavi! Weiter so! ✨"
+            ];
+            return praises[Math.floor(Math.random() * praises.length)];
+        }
+
+        function triggerTestCompletion() {
+            playVictorySound();
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+            document.getElementById('reward-modal').classList.remove('hidden');
+        }
+
+        // Animated "Zehner und Einer trennen" Explanation Logic
+        function prepareExplanationSteps() {
+            const n1 = currentProblem.num1;
+            const n2 = currentProblem.num2;
+            const isAdd = currentProblem.op === '+';
+
+            const z1 = Math.floor(n1 / 10) * 10;
+            const e1 = n1 % 10;
+            const z2 = Math.floor(n2 / 10) * 10;
+            const e2 = n2 % 10;
+
+            if (isAdd) {
+                const zSum = z1 + z2;
+                const eSum = e1 + e2;
+                const total = zSum + eSum;
+
+                explanationSteps = [
+                    {
+                        stepText: "Schritt 1: Zahl zerlegen",
+                        spokenText: `Mavi, wir teilen die Zahlen zuerst in blaue Zehner und gelbe Einer auf: ${n1} ist ${z1} plus ${e1}, und ${n2} ist ${z2} plus ${e2}.`,
+                        html: `
+                            <div class="text-center font-bold text-gray-700 text-sm mb-2">Mavi, wir teilen die Zahlen in Zehner (blau) und Einer (gelb):</div>
+                            <div class="flex justify-center items-center gap-4 text-xl font-bold">
+                                <div class="flex flex-col items-center">
+                                    <span class="text-2xl mb-1">${n1}</span>
+                                    <div class="flex gap-1">
+                                        <span class="tens-block px-3 py-1 rounded-xl text-sm">${z1}</span>
+                                        <span class="ones-block px-3 py-1 rounded-xl text-sm">${e1}</span>
+                                    </div>
+                                </div>
+                                <span class="text-2xl text-indigo-600">+</span>
+                                <div class="flex flex-col items-center">
+                                    <span class="text-2xl mb-1">${n2}</span>
+                                    <div class="flex gap-1">
+                                        <span class="tens-block px-3 py-1 rounded-xl text-sm">${z2}</span>
+                                        <span class="ones-block px-3 py-1 rounded-xl text-sm">${e2}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `
+                    },
+                    {
+                        stepText: "Schritt 2: Zehner zusammenzählen 🟦",
+                        spokenText: `Jetzt rechnen wir zuerst die blauen Zehner zusammen: ${z1} plus ${z2} ist gleich ${zSum}.`,
+                        html: `
+                            <div class="text-center font-bold text-gray-700 text-sm mb-2">Zuerst rechnen wir die blauen Zehner-Zahlen zusammen:</div>
+                            <div class="flex items-center justify-center gap-3 my-2">
+                                <span class="tens-block text-2xl font-bold px-4 py-2 rounded-2xl animate-pulse">${z1}</span>
+                                <span class="text-2xl font-bold text-indigo-600">+</span>
+                                <span class="tens-block text-2xl font-bold px-4 py-2 rounded-2xl animate-pulse">${z2}</span>
+                                <span class="text-2xl font-bold text-gray-400">=</span>
+                                <span class="tens-block text-3xl font-extrabold px-5 py-2 rounded-2xl bg-blue-600 shadow-lg anim-combine">${zSum}</span>
+                            </div>
+                        `
+                    },
+                    {
+                        stepText: "Schritt 3: Einer zusammenzählen 🟨",
+                        spokenText: `Danach rechnen wir die gelben Einer-Zahlen zusammen: ${e1} plus ${e2} ist gleich ${eSum}.`,
+                        html: `
+                            <div class="text-center font-bold text-gray-700 text-sm mb-2">Jetzt rechnen wir die gelben Einer-Zahlen zusammen:</div>
+                            <div class="flex items-center justify-center gap-3 my-2">
+                                <span class="ones-block text-2xl font-bold px-4 py-2 rounded-2xl animate-pulse">${e1}</span>
+                                <span class="text-2xl font-bold text-indigo-600">+</span>
+                                <span class="ones-block text-2xl font-bold px-4 py-2 rounded-2xl animate-pulse">${e2}</span>
+                                <span class="text-2xl font-bold text-gray-400">=</span>
+                                <span class="ones-block text-3xl font-extrabold px-5 py-2 rounded-2xl bg-amber-500 shadow-lg anim-combine">${eSum}</span>
+                            </div>
+                        `
+                    },
+                    {
+                        stepText: "Schritt 4: Alles zusammenfügen ✨",
+                        spokenText: `Zum Schluss fügen wir alles zusammen: ${zSum} plus ${eSum} ergibt ${total}. Das Ergebnis ist ${total}! Bravo Mavi!`,
+                        html: `
+                            <div class="text-center font-bold text-gray-700 text-sm mb-2">Am Ende fügen wir Zehner und Einer zusammen:</div>
+                            <div class="flex items-center justify-center gap-3 my-2">
+                                <span class="tens-block text-2xl font-bold px-4 py-2 rounded-2xl">${zSum}</span>
+                                <span class="text-2xl font-bold text-indigo-600">+</span>
+                                <span class="ones-block text-2xl font-bold px-4 py-2 rounded-2xl">${eSum}</span>
+                                <span class="text-2xl font-bold text-gray-400">=</span>
+                                <span class="bg-emerald-500 text-white text-4xl font-extrabold px-6 py-2 rounded-2xl shadow-xl animate-bounce">${total}</span>
+                            </div>
+                            <div class="text-center text-emerald-700 font-bold text-lg mt-2">Das Ergebnis ist ${total}! 🎉</div>
+                        `
+                    }
+                ];
+            } else {
+                // Subtraction Steps
+                const step1Sub = n1 - z2;
+                const total = step1Sub - e2;
+
+                explanationSteps = [
+                    {
+                        stepText: "Schritt 1: Zehner abziehen 🟦",
+                        spokenText: `Mavi, zuerst ziehen wir den blauen Zehner ab: ${n1} minus ${z2} ist gleich ${step1Sub}.`,
+                        html: `
+                            <div class="text-center font-bold text-gray-700 text-sm mb-2">Mavi, zuerst ziehen wir den Zehner (${z2}) ab:</div>
+                            <div class="flex items-center justify-center gap-3 my-2">
+                                <span class="text-2xl font-bold px-4 py-2 rounded-2xl bg-white border-2 border-indigo-200">${n1}</span>
+                                <span class="text-2xl font-bold text-rose-500">-</span>
+                                <span class="tens-block text-2xl font-bold px-4 py-2 rounded-2xl animate-pulse">${z2}</span>
+                                <span class="text-2xl font-bold text-gray-400">=</span>
+                                <span class="tens-block text-3xl font-extrabold px-5 py-2 rounded-2xl shadow-lg">${step1Sub}</span>
+                            </div>
+                        `
+                    },
+                    {
+                        stepText: "Schritt 2: Einer abziehen 🟨",
+                        spokenText: `Jetzt ziehen wir den gelben Einer ab: ${step1Sub} minus ${e2} ergibt ${total}. Das Ergebnis ist ${total}! Super gemacht Mavi!`,
+                        html: `
+                            <div class="text-center font-bold text-gray-700 text-sm mb-2">Jetzt ziehen wir den Einer (${e2}) vom Zwischenergebnis ab:</div>
+                            <div class="flex items-center justify-center gap-3 my-2">
+                                <span class="tens-block text-2xl font-bold px-4 py-2 rounded-2xl">${step1Sub}</span>
+                                <span class="text-2xl font-bold text-rose-500">-</span>
+                                <span class="ones-block text-2xl font-bold px-4 py-2 rounded-2xl animate-pulse">${e2}</span>
+                                <span class="text-2xl font-bold text-gray-400">=</span>
+                                <span class="bg-emerald-500 text-white text-4xl font-extrabold px-6 py-2 rounded-2xl shadow-xl animate-bounce">${total}</span>
+                            </div>
+                            <div class="text-center text-emerald-700 font-bold text-lg mt-2">Das Ergebnis ist ${total}! 🎉</div>
+                        `
+                    }
+                ];
+            }
+        }
+
+        function openExplanationModal() {
+            currentStepIdx = 0;
+            renderStep();
+            document.getElementById('explanation-modal').classList.remove('hidden');
+        }
+
+        function closeExplanationModal() {
+            stopAudio();
+            document.getElementById('explanation-modal').classList.add('hidden');
+            generateNextQuestion();
+        }
+
+        function renderStep() {
+            stopAudio();
+            const step = explanationSteps[currentStepIdx];
+            const stage = document.getElementById('anim-stage');
+            stage.innerHTML = `
+                <div class="text-xs font-bold text-indigo-600 bg-white px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
+                    <span>${step.stepText}</span>
+                    <span id="playing-wave-indicator" class="hidden">
+                        <span class="audio-wave"><div></div><div></div><div></div></span>
+                    </span>
+                </div>
+                ${step.html}
+            `;
+
+            document.getElementById('step-indicator').innerText = `Schritt ${currentStepIdx + 1} / ${explanationSteps.length}`;
+            document.getElementById('prev-step-btn').style.visibility = currentStepIdx === 0 ? 'hidden' : 'visible';
+            
+            if (currentStepIdx === explanationSteps.length - 1) {
+                document.getElementById('next-step-btn').innerText = "Fertig ✓";
+            } else {
+                document.getElementById('next-step-btn').innerHTML = 'Weiter <i class="fa-solid fa-arrow-right"></i>';
+            }
+
+            playTone(400 + currentStepIdx * 80, 'sine', 0.1);
+            
+            // Auto play TTS speech for the current step
+            playStepSpeech(step.spokenText);
+        }
+
+        function stepNext() {
+            if (currentStepIdx < explanationSteps.length - 1) {
+                currentStepIdx++;
+                renderStep();
+            } else {
+                closeExplanationModal();
+            }
+        }
+
+        function stepPrev() {
+            if (currentStepIdx > 0) {
+                currentStepIdx--;
+                renderStep();
+            }
+        }
+
+        // Synchronized Text-to-Speech (OpenAI TTS with Web Speech API Fallback)
+        async function playStepSpeech(text) {
+            stopAudio();
+            setSpeakingUI(true);
+
+            if (apiKey) {
+                try {
+                    const response = await fetch("https://api.openai.com/v1/audio/speech", {
+                        method: "POST",
+                        headers: {
+                            "Authorization": `Bearer ${apiKey}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            model: "tts-1",
+                            input: text,
+                            voice: "nova", // Upbeat, friendly tone
+                            response_format: "mp3"
+                        })
+                    });
+
+                    if (!response.ok) throw new Error("OpenAI TTS failed");
+
+                    const blob = await response.blob();
+                    const audioUrl = URL.createObjectURL(blob);
+                    currentAudioElement = new Audio(audioUrl);
+                    
+                    currentAudioElement.onended = () => {
+                        setSpeakingUI(false);
+                    };
+                    currentAudioElement.onerror = () => {
+                        fallbackWebSpeech(text);
+                    };
+
+                    await currentAudioElement.play();
+                    return;
+
+                } catch (e) {
+                    console.warn("OpenAI TTS failed, falling back to Web Speech API:", e);
+                    fallbackWebSpeech(text);
+                }
+            } else {
+                fallbackWebSpeech(text);
+            }
+        }
+
+        function fallbackWebSpeech(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Stop prior
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'de-DE';
+                utterance.rate = 0.9; // Slightly slower for child clarity
+                
+                utterance.onend = () => setSpeakingUI(false);
+                utterance.onerror = () => setSpeakingUI(false);
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                setSpeakingUI(false);
+            }
+        }
+
+        function stopAudio() {
+            if (currentAudioElement) {
+                currentAudioElement.pause();
+                currentAudioElement = null;
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            setSpeakingUI(false);
+        }
+
+        function toggleCurrentStepSpeech() {
+            if (isSpeaking) {
+                stopAudio();
+            } else {
+                const step = explanationSteps[currentStepIdx];
+                if (step) playStepSpeech(step.spokenText);
+            }
+        }
+
+        function setSpeakingUI(speaking) {
+            isSpeaking = speaking;
+            const btnLabel = document.getElementById('tts-btn-label');
+            const icon = document.getElementById('tts-icon');
+            const wave = document.getElementById('playing-wave-indicator');
+
+            if (speaking) {
+                if (btnLabel) btnLabel.innerText = "Stoppen ⏸️";
+                if (icon) icon.className = "fa-solid fa-volume-xmark text-rose-500 animate-pulse";
+                if (wave) wave.classList.remove('hidden');
+            } else {
+                if (btnLabel) btnLabel.innerText = "Anhören 🔊";
+                if (icon) icon.className = "fa-solid fa-volume-high text-indigo-600";
+                if (wave) wave.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
